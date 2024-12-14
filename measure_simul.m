@@ -8,8 +8,8 @@ function [] = measure_simul(varargin)
     
     %% period boundary
     ip = inputParser;
-    ip.addParameter('cir', 3);
-    ip.addParameter('wid', 3);
+    ip.addParameter('cir', 10);
+    ip.addParameter('wid', 10);
     ip.addParameter('plotting', 1);
     ip.addParameter('boundary', 'periodic');
     
@@ -27,7 +27,7 @@ function [] = measure_simul(varargin)
     tableau = zeros(Ns+1, Ns*2);
     r = 0; % stablizer size
     
-    T = 200;
+    T = 100;
     
     if plotting
         figure
@@ -37,15 +37,15 @@ function [] = measure_simul(varargin)
     for step = 1:T
         for idx = 1:cir*wid
             [y, x] = homod(idx, wid);
-            [tableau, r, bond] = measure(x, y, tableau, r, [cir, wid]);
+            [tableau, r, bond] = measure(x, y, tableau, r, pars);
             dbstop = 1;
         end
-        fprintf('step=%d, r=%d\n', step, r)
-        render_table(tableau, r, cir, wid);
-        if ~pair_commute(tableau, r, cir, wid)
-            error('not commute')
-        end
-        disp(' ')
+        % fprintf('step=%d, r=%d\n', step, r)
+        % render_table(tableau, r, cir, wid);
+        % if ~pair_commute(tableau, r, cir, wid)
+        %     error('not commute')
+        % end
+        % disp(' ')
 
         % Plotting
         if plotting
@@ -58,10 +58,11 @@ function [] = measure_simul(varargin)
 
 end
 
-function [row, bond] = generate_bond(x, y, dims, boundary)
-    cir = dims(1);
-    wid = dims(2);
+function [row, bond] = generate_bond(x, y, pars)
+    cir = pars.cir;
+    wid = pars.wid;
     Ns = cir*wid*2;
+    boundary = pars.boundary;
 
     row = zeros(1, Ns*2);
 
@@ -107,12 +108,12 @@ function [row, bond] = generate_bond(x, y, dims, boundary)
 end
 
 
-function [tab, r_stab_size, bond] = measure(x, y, tab, r_stab_size, dims)
-    cir = dims(1);
-    wid = dims(2);
+function [tab, r_stab_size, bond] = measure(x, y, tab, r_stab_size, pars)
+    cir = pars.cir;
+    wid = pars.wid;
     Ns = cir*wid*2;
 
-    [row, bond] = generate_bond(x, y, dims, 'open');
+    [row, bond] = generate_bond(x, y, pars);
     
     % Find the first anti-commuting row
     phase = 0;
