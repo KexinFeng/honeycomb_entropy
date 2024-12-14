@@ -8,8 +8,8 @@ function [] = measure_simul(varargin)
     
     %% period boundary
     ip = inputParser;
-    ip.addParameter('cir', 3);
-    ip.addParameter('wid', 3);
+    ip.addParameter('cir', 2);
+    ip.addParameter('wid', 2);
     ip.addParameter('plotting', 1);
     ip.addParameter('boundary', 'periodic');
     
@@ -27,7 +27,7 @@ function [] = measure_simul(varargin)
     tableau = zeros(Ns+1, Ns*2);
     r = 0; % stablizer size
     
-    T = 200;
+    T = 30;
     
     if plotting
         figure
@@ -85,7 +85,7 @@ function [row, bond] = generate_bond(x, y, dims, boundary)
             bond = randi([1, 3]);
         end
     else
-        error('%s not right', boundary)
+        error(sprintf('%s not right', boundary))
     end
     
     % (x, y, 0)-X-(x, y , 1)

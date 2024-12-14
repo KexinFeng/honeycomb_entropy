@@ -1,0 +1,27 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "echo",
+            "type": "shell",
+            "command": "echo Hello"
+        },
+        {
+          "label": "Run MATLAB Script",
+          "type": "shell",
+          "command": "/Applications/MATLAB_R2024b.app/bin/matlab",
+            "args": [
+                "-batch",
+                "\"run('${file}')\"",
+            ],
+          "problemMatcher": [],
+          "group": {
+            "kind": "build",
+            "isDefault": true
+          }
+        }
+    ]
+}
+
