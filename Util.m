@@ -7,16 +7,19 @@ classdef Util
             phase = mod(phase, 2);
         end
         
+        
         function row = pauli_product(row1, row2)
             assert(all(size(row1) == size(row2)));
             row = mod(row1 + row2, 2);
         end
+
         
         function [] = render_table(tab, r, cir, wid)
             for i = 1:r
                 fprintf("%s\n", Util.row2pauli(tab(i, :), cir, wid));
             end
         end
+
 
         function [] = render_table_destab(tab, stab_size, cir, wid)
             Ns = cir * wid * 2;
@@ -25,26 +28,40 @@ classdef Util
             %     if i == Ns || i == Ns + 1
             %         continue
             %     end
+                if i == stab_size + 1 || i == Ns + stab_size + 1
+                    fprintf('r.....\n')
+                end
+                if i == Ns + 1
+                    fprintf('--------\n')
+                end
                 fprintf("%d: %s\n", i, Util.row2pauli(tab(i, :), cir, wid));
             end
         end
 
-        function b = pair_tab_property(tab, r, cir, wid)
+
+        function b = pair_tab_property(tab, cir, wid)
             Ns = cir * wid * 2;
             b = true;
+            str_arr = {};
             for i = 1:Ns*2
                 for j = i+1:Ns*2
                     if j - Ns == i
-                        b = 1 == Util.symplectic_inner_product(tab(i, :), tab(j, :), Ns);
+                        res = 1 == Util.symplectic_inner_product(tab(i, :), tab(j, :), Ns);
                     else
-                        b = 0 == Util.symplectic_inner_product(tab(i, :), tab(j, :), Ns);
+                        res = 0 == Util.symplectic_inner_product(tab(i, :), tab(j, :), Ns);
                     end
-                    if ~b
-                        break
+                    if ~res
+                        str_arr = [str_arr, [i, j]];
                     end
+                    b = b && res;
                 end
             end
+            if ~b
+                disp(str_arr);
+                error('error: not pair satisfy tab property');
+            end
         end
+
         
         function b = pair_commute(tab, r, cir, wid)
             b = true;
@@ -52,12 +69,13 @@ classdef Util
                 for j = i+1:r
                     b = 0 == Util.symplectic_inner_product(tab(i, :), tab(j, :), cir*wid*2);
                     if ~b
-                        break
+                        error('not pair commute')
                     end
                 end
             end
         end
         
+
         function pauli_str = row2pauli(row, cir, wid)
             % 2:x, 1:z, 3:y
             bond_names = ['Z', 'X', 'Y'];

@@ -1,4 +1,4 @@
-function res = measure_simulator_destab(varargin)
+function res = measure_simul_destab(varargin)
     tic 
     filepath = fileparts(mfilename('fullpath'));
     addpath(genpath([filepath, '/../utils']));
@@ -61,7 +61,7 @@ function res = measure_simulator_destab(varargin)
                 continue
             end
 
-            if ~Util.pair_tab_property(tableau, stab_size, cir, wid)
+            if ~Util.pair_tab_property(tableau, cir, wid)
                 error('not commute')
             end
             % print
@@ -69,7 +69,7 @@ function res = measure_simulator_destab(varargin)
             fprintf('step=%d, r=%d\n', step, stab_size)
         end
 
-        if ~Util.pair_tab_property(tableau, stab_size, cir, wid)
+        if ~Util.pair_tab_property(tableau, cir, wid)
             error('not commute')
         end
         % print
@@ -157,14 +157,14 @@ function [tab, stab_size] = scenario3(tab, row_measure, row_idx, stab_size)
 end
 
 
-function [scenario, row_idx] = check_scenario(tab, row, stab_size, pars)
+function [scenario, row_idx] = check_scenario(tab, row_measure, stab_size, pars)
     Ns = pars.cir * pars.wid * 2;
     
     Nrow = Ns - triexp(strcmp(pars.boundary, 'open'), 2, 0);
 
     % scenario 1
     for i = Ns+1: Ns + stab_size
-        if Util.symplectic_inner_product(tab(i, :), row, Ns)
+        if Util.symplectic_inner_product(tab(i, :), row_measure, Ns)
             scenario = 1;
             row_idx = i;
             return
@@ -173,7 +173,7 @@ function [scenario, row_idx] = check_scenario(tab, row, stab_size, pars)
     
     % scenario 3
     for i = [Ns + stab_size + 1: Ns + Nrow, stab_size + 1: Nrow]
-        if Util.symplectic_inner_product(tab(i, :), row, Ns)
+        if Util.symplectic_inner_product(tab(i, :), row_measure, Ns)
             scenario = 3;
             row_idx = i;
             return

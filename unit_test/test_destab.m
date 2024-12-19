@@ -3,6 +3,7 @@ filepath = fileparts(mfilename('fullpath'));
 addpath(genpath([filepath, '/../']));
 addpath(genpath([filepath, '/../../utils']));
 rng(24);
+clc;
 
 %%
 pars.cir = 2;
@@ -31,8 +32,8 @@ for func = res.test_funcs
 end
 
 check_scenario = res.test_funcs{3};
-scenario1 = res.test_funcs{3};
-scenario3 = res.test_funcs{3};
+scenario1 = res.test_funcs{1};
+scenario3 = res.test_funcs{2};
 [~, ~, res] = generate_bond(1, 1, pars);
 
 %% Y3Y5
@@ -44,6 +45,8 @@ assert(scenario == 3);
 [tab, stab_size] = scenario3(tab, row1, row_idx, stab_size);
 assert(stab_size == 1);
 
+Util.pair_tab_property(tab, stab_size, cir, wid);
+
 %% Z4Z6
 row2 = res.bond2row(2, 1, 1, pars);
 
@@ -53,11 +56,17 @@ assert(scenario == 3);
 [tab, stab_size] = scenario3(tab, row2, row_idx, stab_size);
 assert(stab_size == 2);
 
+Util.render_table_destab(tab, stab_size, cir, wid);
+Util.pair_tab_property(tab, cir, wid);
+
 %% Y3Y5 * Z4Z6
 row3 = Util.pauli_product(row1, row2);
+Util.row2pauli(row3, cir, wid)
+
 [scenario, ~] = check_scenario(tab, row3, stab_size, pars);
 assert(scenario == 2);
 
+Util.pair_tab_property(tab, cir, wid);
 %%
 Util.render_table_destab(tab, stab_size, cir, wid);
 

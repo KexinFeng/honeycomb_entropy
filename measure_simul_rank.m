@@ -1,4 +1,4 @@
-function [] = measure_simulator_rank(varargin)
+function [] = measure_simul_rank(varargin)
     tic 
     filepath = fileparts(mfilename('fullpath'));
     addpath(genpath([filepath, '/../utils']));
