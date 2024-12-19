@@ -10,6 +10,7 @@ function [row, bond, res] = generate_bond(x, y, pars)
             bond = randsample([1, 3], 1);
         elseif x == cir && y == wid
             bond = [];
+            row = [];
             return
         elseif y == wid
             bond = randsample([2, 3], 1);

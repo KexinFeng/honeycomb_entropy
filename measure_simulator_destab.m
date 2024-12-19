@@ -14,19 +14,25 @@ function res = measure_simulator_destab(varargin)
     ip.addParameter('wid', 2);
     ip.addParameter('plotting', 1);
     ip.addParameter('boundary', 'open');
-    ip.addParameter('T', 5);
-    ip.addParameter('testing', true);
+    ip.addParameter('T', 10);
+    ip.addParameter('testing', false);
     
     ip.parse(varargin{:});
     pars = ip.Results;
     
     cir = pars.cir;
     wid = pars.wid;
+    boundary = pars.boundary;
     
     %% prepare
     Ns = cir*wid*2;
     
     tableau = eye(Ns*2, Ns*2);
+    if strcmp(pars.boundary, 'open')
+        tableau([1, Ns+1, Ns-1, 2*Ns-1], :) = tableau([Ns-1, 2*Ns-1, 1, Ns+1], :);
+        % print
+        disp('swapped')
+    end
     stab_size = 0; % stablizer size
     Util.render_table_destab(tableau, stab_size, cir, wid);
 
@@ -35,7 +41,7 @@ function res = measure_simulator_destab(varargin)
     if pars.plotting
         figure
         hold on
-        plot(0, Ns - 2*strcmp(pars.boundary, 'open') - stab_size, '*', 'Color', 'b');
+        plot(0, Ns - 2*strcmp(boundary, 'open') - stab_size, '*', 'Color', 'b');
         pause(0.01);        
     end
     
@@ -54,20 +60,21 @@ function res = measure_simulator_destab(varargin)
             if isempty(bond)
                 continue
             end
-            % print
-            Util.render_table_destab(tableau, stab_size, cir, wid);
+
             if ~Util.pair_tab_property(tableau, stab_size, cir, wid)
                 error('not commute')
             end
+            % print
+            Util.render_table_destab(tableau, stab_size, cir, wid);
             fprintf('step=%d, r=%d\n', step, stab_size)
         end
 
-        % Printing
-        fprintf('a loop: step=%d, r=%d\n', step, stab_size)
-        % Util.render_table_destab(tableau, stab_size, cir, wid);
         if ~Util.pair_tab_property(tableau, stab_size, cir, wid)
             error('not commute')
         end
+        % print
+        Util.render_table_destab(tableau, stab_size, cir, wid);
+        fprintf('step=%d, r=%d\n', step, stab_size)
         disp(' ')
 
         % Plotting
@@ -90,18 +97,13 @@ function [tab, stab_size, bond, res] = measure_destab(x, y, tab, stab_size, pars
     wid = pars.wid;
     Ns = cir*wid*2;
 
-    if strcmp(pars.boundary, 'open')
-        tab([1, Ns+1, Ns-1, 2*Ns-1], :) = tab([Ns-1, 2*Ns-1, 1, Ns+1], :);
-        % print
-        Util.render_table_destab(tab, 0, cir, wid);
-    end
 
     [row, bond] = generate_bond(x, y, pars);
     % print
-    fprintf('bond: %s\n', Util.row2pauli(row, cir, wid))
     if isempty(bond)
         return
     end
+    fprintf('bond: %s\n', Util.row2pauli(row, cir, wid))
 
     [scenario, row_idx] = check_scenario(tab, row, stab_size, pars);
     
@@ -120,6 +122,7 @@ function [tab, stab_size, bond, res] = measure_destab(x, y, tab, stab_size, pars
         res.test_funcs = {@scenario1, @scenario3, @check_scenario};
     end      
 end
+
 
 %% Functions
 function tab = scenario1(tab, row_measure, row_idx)
@@ -147,7 +150,7 @@ function [tab, stab_size] = scenario3(tab, row_measure, row_idx, stab_size)
     src_idx = [row_idx, row_idx_bar, stab_size + 1, Ns + stab_size + 1];
     tgt_idx = [Ns + stab_size + 1, stab_size + 1, row_idx, row_idx_bar];
     tab(src_idx, :) = tab(tgt_idx, :);
-    row_idx = stab_size + 1;
+    row_idx = Ns + stab_size + 1;
 
     tab = scenario1(tab, row_measure, row_idx);
     stab_size = stab_size + 1;
