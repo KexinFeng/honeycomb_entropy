@@ -14,7 +14,7 @@ function res = measure_simul_destab(varargin)
     ip.addParameter('wid', 2);
     ip.addParameter('plotting', 1);
     ip.addParameter('boundary', 'open');
-    ip.addParameter('T', 10);
+    ip.addParameter('T', 20);
     ip.addParameter('testing', false);
     
     ip.parse(varargin{:});
@@ -56,7 +56,6 @@ function res = measure_simul_destab(varargin)
             [y, x] = homod(idx, wid);
             % [tableau, stab_size, bond] = measure_rank(x, y, tableau, stab_size, pars);
             [tableau, stab_size, bond, res] = measure_destab(x, y, tableau, stab_size, pars);
-            dbstop = 1;
             if isempty(bond)
                 continue
             end
@@ -65,16 +64,15 @@ function res = measure_simul_destab(varargin)
                 error('not commute')
             end
             % print
+            fprintf('\nidx: %d\n', idx);
             Util.render_table_destab(tableau, stab_size, cir, wid);
-            fprintf('step=%d, r=%d\n', step, stab_size)
         end
 
         if ~Util.pair_tab_property(tableau, cir, wid)
             error('not commute')
         end
         % print
-        Util.render_table_destab(tableau, stab_size, cir, wid);
-        fprintf('step=%d, r=%d\n', step, stab_size)
+        fprintf('step=%d, r=%d\n\n', step, stab_size)
         disp(' ')
 
         % Plotting
@@ -130,15 +128,14 @@ function tab = scenario1(tab, row_measure, row_idx)
     Ns = size(row_measure, 2) / 2;
     
     row_append = tab(row_idx, :);
-    tab(row_idx, :) = row_measure;
-    tab(row_idx - Ns, :) = row_append;
-    
     % restore the tableau property
-    for i = row_idx + 1: Ns*2
+    for i = [row_idx + 1: Ns*2, 1: Ns]
         if Util.symplectic_inner_product(tab(i, :), row_measure, Ns)
             tab(i, :) = Util.pauli_product(row_append, tab(i, :));
         end
     end
+    tab(row_idx, :) = row_measure;
+    tab(row_idx - Ns, :) = row_append;
 end
 
 function [tab, stab_size] = scenario3(tab, row_measure, row_idx, stab_size)
@@ -147,9 +144,8 @@ function [tab, stab_size] = scenario3(tab, row_measure, row_idx, stab_size)
 
     % swap row_idx to Ns + stab_size + 1
     row_idx_bar = homod(row_idx + Ns, 2*Ns);
-    src_idx = [row_idx, row_idx_bar, stab_size + 1, Ns + stab_size + 1];
-    tgt_idx = [Ns + stab_size + 1, stab_size + 1, row_idx, row_idx_bar];
-    tab(src_idx, :) = tab(tgt_idx, :);
+    tab([row_idx, Ns + stab_size + 1], :) = tab([Ns + stab_size + 1, row_idx], :);
+    tab([row_idx_bar, stab_size + 1], :) = tab([stab_size + 1, row_idx_bar], :);
     row_idx = Ns + stab_size + 1;
 
     tab = scenario1(tab, row_measure, row_idx);

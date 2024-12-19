@@ -24,7 +24,7 @@ end
 
 %% get to-test func
 input_cell = {'testing', true, 'plotting', false, 'cir', cir, 'wid', wid};
-res = measure_simulator_destab(input_cell{:});
+res = measure_simul_destab(input_cell{:});
 
 for func = res.test_funcs
     name = func2str(func{1});
@@ -45,7 +45,7 @@ assert(scenario == 3);
 [tab, stab_size] = scenario3(tab, row1, row_idx, stab_size);
 assert(stab_size == 1);
 
-Util.pair_tab_property(tab, stab_size, cir, wid);
+Util.pair_tab_property(tab, cir, wid);
 
 %% Z4Z6
 row2 = res.bond2row(2, 1, 1, pars);

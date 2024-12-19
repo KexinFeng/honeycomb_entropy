@@ -28,16 +28,15 @@ classdef Util
             %     if i == Ns || i == Ns + 1
             %         continue
             %     end
-                if i == stab_size + 1 || i == Ns + stab_size + 1
-                    fprintf('r.....\n')
-                end
                 if i == Ns + 1
                     fprintf('--------\n')
+                end
+                if i == stab_size + 1 || i == Ns + stab_size + 1
+                    fprintf('r.....\n')
                 end
                 fprintf("%d: %s\n", i, Util.row2pauli(tab(i, :), cir, wid));
             end
         end
-
 
         function b = pair_tab_property(tab, cir, wid)
             Ns = cir * wid * 2;
@@ -57,6 +56,7 @@ classdef Util
                 end
             end
             if ~b
+                Util.render_table_destab(tab, 0, cir, wid);
                 disp(str_arr);
                 error('error: not pair satisfy tab property');
             end
