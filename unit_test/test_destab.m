@@ -8,7 +8,7 @@ clc;
 %%
 pars.cir = 2;
 pars.wid = 2;
-pars.boundary = 'open';
+pars.boundary = 'periodic';
 
 cir = pars.cir;
 wid = pars.wid;
@@ -45,6 +45,7 @@ assert(scenario == 3);
 [tab, stab_size] = scenario3(tab, row1, row_idx, stab_size);
 assert(stab_size == 1);
 
+Util.render_table_destab(tab, stab_size, cir, wid);
 Util.pair_tab_property(tab, cir, wid);
 
 %% Z4Z6
@@ -61,15 +62,30 @@ Util.pair_tab_property(tab, cir, wid);
 
 %% Y3Y5 * Z4Z6
 row3 = Util.pauli_product(row1, row2);
-Util.row2pauli(row3, cir, wid)
+% % print
+% Util.row2pauli(row3, cir, wid)
 
 [scenario, ~] = check_scenario(tab, row3, stab_size, pars);
 assert(scenario == 2);
 
-Util.pair_tab_property(tab, cir, wid);
-%%
+assert(stab_size == 2);
+
 Util.render_table_destab(tab, stab_size, cir, wid);
+Util.pair_tab_property(tab, cir, wid);
 
+%% X3X6
+row4 = res.bond2row(2, 1, 2, pars);
 
-dbstop = 1
+[scenario, row_idx] = check_scenario(tab, row4, stab_size, pars);
+assert(scenario == 1);
+
+tab = scenario1(tab, row4, row_idx);
+assert(stab_size == 2);
+
+Util.render_table_destab(tab, stab_size, cir, wid);
+Util.pair_tab_property(tab, cir, wid);
+
+%%
+fprintf('success\n')
+dbstop = 1;
     

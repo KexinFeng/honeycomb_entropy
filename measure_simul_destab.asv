@@ -16,7 +16,7 @@ function res = measure_simul_destab(varargin)
     ip.addParameter('boundary', 'open');
     ip.addParameter('T', 30);
     ip.addParameter('testing', false);
-    ip.addParameter('verbose', false);
+    ip.addParame
     
     ip.parse(varargin{:});
     pars = ip.Results;
@@ -100,12 +100,9 @@ function [tab, stab_size, bond, res] = measure_destab(x, y, tab, stab_size, pars
     if isempty(bond)
         return
     end
+    % % print
+    % fprintf('bond: %s\n', Util.row2pauli(row, cir, wid))
 
-    if pars.verbose
-       fprintf('bond: %s\n', Util.row2pauli(row, cir, wid))
-    end
-
-    
     [scenario, row_idx] = check_scenario(tab, row, stab_size, pars);
     
     if scenario == 1

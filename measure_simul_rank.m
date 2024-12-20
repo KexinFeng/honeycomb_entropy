@@ -8,12 +8,13 @@ function [] = measure_simul_rank(varargin)
     
     %% period boundary
     ip = inputParser;
-    ip.addParameter('cir', 2);
-    ip.addParameter('wid', 2);
+    ip.addParameter('cir', 10);
+    ip.addParameter('wid', 10);
     ip.addParameter('plotting', 1);
     ip.addParameter('boundary', 'open');
-    ip.addParameter('T', 10);
-    
+    ip.addParameter('T', 30);
+    ip.addParameter('verbose', false);
+
     ip.parse(varargin{:});
     pars = ip.Results;
     
@@ -46,10 +47,12 @@ function [] = measure_simul_rank(varargin)
         end
 
         % Printing
-        fprintf('step=%d, r=%d\n', step, stab_size)
-        Util.render_table(tableau, stab_size, cir, wid);
-        if ~Util.pair_commute(tableau, stab_size, cir, wid)
-            error('not commute')
+        if pars.verbose
+            fprintf('step=%d, r=%d\n', step, stab_size)
+            Util.render_table(tableau, stab_size, cir, wid);
+            if ~Util.pair_commute(tableau, stab_size, cir, wid)
+                error('not commute')
+            end
         end
         disp(' ')
 
