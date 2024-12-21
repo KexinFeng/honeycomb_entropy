@@ -14,7 +14,7 @@ classdef Util
         end
 
         
-        function [] = render_table(tab, r, cir, wid)
+        function render_table(tab, r, cir, wid)
             for i = 1:r
                 fprintf("%s\n", Util.row2pauli(tab(i, :), cir, wid));
             end
@@ -24,17 +24,20 @@ classdef Util
         function [] = render_table_destab(tab, stab_size, cir, wid)
             Ns = cir * wid * 2;
             for i = 1 : Ns*2
-            % for i = 2 : Ns*2-1
-            %     if i == Ns || i == Ns + 1
-            %         continue
-            %     end
+                if i == stab_size + 1 
+                    fprintf('r.....\n')
+                end
                 if i == Ns + 1
                     fprintf('--------\n')
                 end
-                if i == stab_size + 1 || i == Ns + stab_size + 1
+                if i == Ns + stab_size + 1
                     fprintf('r.....\n')
                 end
                 fprintf("%d: %s\n", i, Util.row2pauli(tab(i, :), cir, wid));
+            end
+
+            if Ns + stab_size + 1 == Ns*2 + 1
+                fprintf('r.....\n')
             end
         end
 

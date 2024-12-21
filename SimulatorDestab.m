@@ -30,7 +30,7 @@ methods
 
     end
     
-    function [] = simulate(obj)
+    function simulate(obj)
         tic 
         filepath = fileparts(mfilename('fullpath'));
         addpath(genpath([filepath, '/../utils']));
@@ -38,7 +38,6 @@ methods
         
         rng(24);
         clc;
-        res = struct();
     
         %% prepare
         cir = obj.cir;
@@ -73,7 +72,7 @@ methods
     
         %% main loop
         for step = 1:T
-            for idx = 1:cir*wid
+            for idx = 1:cir*wid %#ok<*PROP>
                 [y, x] = homod(idx, wid);
                 % [tableau, stab_size, bond] = measure_rank(x, y, tableau, stab_size, pars);
                 [tableau, stab_size, bond, res] = obj.measure_destab(x, y, tableau, stab_size);
@@ -82,7 +81,7 @@ methods
                 end
                 
                 if obj.verbose
-                    Util.pair_tab_property(tableau, cir, wid)
+                    Util.pair_tab_property(tableau, cir, wid);
                     % print
                     fprintf('\nidx: %d\n', idx);
                     Util.render_table_destab(tableau, stab_size, cir, wid);
@@ -90,7 +89,7 @@ methods
             end
     
             if obj.verbose
-                Util.pair_tab_property(tableau, cir, wid)
+                Util.pair_tab_property(tableau, cir, wid);
                 fprintf('step=%d, r=%d\n\n', step, stab_size)
                 disp(' ')
             end
