@@ -100,10 +100,10 @@ methods
         
         disp(['stab_size=', num2str(stab_size), ' total spin:', num2str(Ns - 2*strcmp(obj.boundary, 'open'))])
         
-        % % Save
-        % path = sprintf('./tmp/tab4unit_test.mat');
-        % mkdir(path);
-        % save(path, "tableau", "stab_size")
+        % Save
+        path = sprintf('./tmp/tab4unit_test.mat');
+        mkdir(path);
+        save(path, "tableau", "stab_size")
     end
 
 
