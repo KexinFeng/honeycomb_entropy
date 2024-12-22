@@ -4,7 +4,8 @@ addpath(genpath([filepath, '/../../utils']));
 clc
 
 tab = load('../tmp/tab4unit_test.mat');
-tableau = Tableau('cir', 2, 'wid', 2, 'tab', tab.tableau, 'stab_size', tab.stab_size);
+tableau = Tableau('cir', 2, 'wid', 2, ...
+    'tab', tab.tableau, 'stab_size', tab.stab_size);
 
 g1 = Simulator();
 g1.set_tableau(tableau);

@@ -46,7 +46,7 @@ methods
     end
     
 
-    function render_table_destab(obj)
+    function render_table(obj)
         obj.Ns = obj.cir * obj.wid * 2;
         for i = 1 : obj.Ns*2
             if i == obj.stab_size + 1 
@@ -87,7 +87,7 @@ methods
             end
         end
         if ~b
-            obj.render_table_destab(obj.tab, 0, obj.cir, obj.wid);
+            obj.render_table(obj.tab, 0, obj.cir, obj.wid);
             disp(str_arr);
             error('error: not pair satisfy tab property');
         end

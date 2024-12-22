@@ -34,7 +34,7 @@ methods
         obj.tableau = Tableau('cir', obj.cir, 'wid', obj.wid, 'boundary', obj.boundary);
 
         if obj.verbose
-            obj.tableau.render_table_destab();
+            obj.tableau.render_table();
         end
 
         obj.check_generator = [];
@@ -245,8 +245,8 @@ methods
         tableau.tab([src - Ns, valid_stab_idx - Ns], :) = ...
             tableau.tab([valid_stab_idx - Ns, src - Ns], :);
 
-        obj.tableau = tableau;
-        obj.tableau.stab_size = stab_size;
+        % obj.tableau = tableau;
+        tableau.stab_size = stab_size;
     end
 
 
@@ -265,7 +265,7 @@ methods
         row_tgt_bar = row_tgt - Ns;
         tableau.tab(row_src_bar, :) = mod(tableau.tab(row_src_bar, :) + sum(tableau.tab(row_tgt_bar, :), 1), 2);
     
-        obj.tableau = tableau;
+        % obj.tableau = tableau;
     end
     
 
