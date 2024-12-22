@@ -30,6 +30,7 @@ methods
 
     end
     
+
     function simulate(obj)
         tic 
         filepath = fileparts(mfilename('fullpath'));
@@ -65,17 +66,13 @@ methods
             pause(0.01);        
         end
         
-        % if obj.testing
-        %     [~, ~, ~, res] = measure_destab(1, 1, tableau, stab_size, pars);
-        %     return
-        % end
     
         %% main loop
         for step = 1:T
             for idx = 1:cir*wid %#ok<*PROP>
                 [y, x] = homod(idx, wid);
                 % [tableau, stab_size, bond] = measure_rank(x, y, tableau, stab_size, pars);
-                [tableau, stab_size, bond, res] = obj.measure_destab(x, y, tableau, stab_size);
+                [tableau, stab_size, bond] = obj.measure_destab(x, y, tableau, stab_size);
                 if isempty(bond)
                     continue
                 end
@@ -102,11 +99,15 @@ methods
         end
         
         disp(['stab_size=', num2str(stab_size), ' total spin:', num2str(Ns - 2*strcmp(obj.boundary, 'open'))])
-
+        
+        % % Save
+        % path = sprintf('./tmp/tab4unit_test.mat');
+        % mkdir(path);
+        % save(path, "tableau", "stab_size")
     end
 
 
-    function [tab, stab_size, bond, res] = measure_destab(obj, x, y, tab, stab_size)
+    function [tab, stab_size, bond] = measure_destab(obj, x, y, tab, stab_size)
         % Measure on the unit cell (x, y) 
         res = struct();
     
@@ -137,15 +138,12 @@ methods
             % stochastic output containing enhanced space
             [tab, stab_size] = obj.scenario3(tab, row, row_idx, stab_size);
         end
-    
-        % if obj.testing
-        %     res.test_funcs = {@scenario1, @scenario3, @check_scenario};
-        % end      
+     
     end
     
     
-    %% Functions
-    function tab = scenario1(obj, tab, row_measure, row_idx)
+    %% Tableaue processing
+    function tab = scenario1(~, tab, row_measure, row_idx)
         % row_idx points to the row anticommuting with row_measure
         Ns = size(row_measure, 2) / 2;
         
@@ -160,6 +158,7 @@ methods
         tab(row_idx - Ns, :) = row_append;
     end
     
+
     function [tab, stab_size] = scenario3(obj, tab, row_measure, row_idx, stab_size)
         % row_idx points to the row anticommuting with row_measure
         Ns = size(row_measure, 2) / 2;
@@ -205,7 +204,11 @@ methods
         row_idx = 0;
     end
     
+    
+    % function partial_trace_gausian(obj, )
 
+
+    %% Random generation
     function [row, bond] = generate_bond(obj, x, y)
         cir = obj.cir;
         wid = obj.wid;
