@@ -39,6 +39,8 @@ classdef Util
             if Ns + stab_size + 1 == Ns*2 + 1
                 fprintf('r.....\n')
             end
+
+            fprintf('\n');
         end
 
         function b = pair_tab_property(tab, cir, wid)

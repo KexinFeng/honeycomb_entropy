@@ -31,7 +31,7 @@ Util.pair_tab_property(tab, cir, wid);
 
 dbstop = 1;
 
-%% Z4Z6
+%% Z4Z7
 row2 = simul.bond2row(2, 1, 1);
 
 [scenario, row_idx] = simul.check_scenario(tab, row2, stab_size);
@@ -43,7 +43,7 @@ assert(stab_size == 2);
 Util.render_table_destab(tab, stab_size, cir, wid);
 Util.pair_tab_property(tab, cir, wid);
 
-%% Y3Y5 * Z4Z6
+%% Y3Y5 * Z4Z7
 row3 = Util.pauli_product(row1, row2);
 % % print
 % Util.row2pauli(row3, cir, wid)
@@ -56,7 +56,7 @@ assert(stab_size == 2);
 Util.render_table_destab(tab, stab_size, cir, wid);
 Util.pair_tab_property(tab, cir, wid);
 
-%% X3X6
+%% X3X7
 row4 = simul.bond2row(2, 1, 2);
 
 [scenario, row_idx] = simul.check_scenario(tab, row4, stab_size);
@@ -68,6 +68,18 @@ assert(stab_size == 2);
 Util.render_table_destab(tab, stab_size, cir, wid);
 Util.pair_tab_property(tab, cir, wid);
 
+%% X2X6
+row5 = simul.bond2row(1, 2, 2);
+
+[scenario, row_idx] = simul.check_scenario(tab, row5, stab_size);
+assert(scenario == 3);
+
+[tab, stab_size] = simul.scenario3(tab, row5, row_idx, stab_size);
+assert(stab_size == 3);
+
+Util.render_table_destab(tab, stab_size, cir, wid);
+Util.pair_tab_property(tab, cir, wid);
+
 %%
-fprintf('\nsuccess\n')
+fprintf('success\n')
 dbstop = 1;
