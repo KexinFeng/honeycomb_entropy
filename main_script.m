@@ -8,3 +8,6 @@ simul.simulate()
 
 
 
+% t = containers.Map('KeyType', 'int64', 'ValueType', 'any')
+% 
+% t(1) = 2;

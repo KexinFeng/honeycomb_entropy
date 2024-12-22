@@ -1,11 +1,13 @@
-classdef SimulatorDestab
+classdef SimulatorDestab < handle
 properties
-    cir;
-    wid;
-    plotting;
-    boundary;
-    verbose;
-    T;
+    cir
+    wid
+    plotting
+    boundary
+    verbose
+    T
+    %% internal
+    frozen_qubits 
 end
 
 methods
@@ -28,6 +30,7 @@ methods
             obj.(field) = pars.(field);  % Dynamic field assignment
         end
 
+        obj.frozen_qubits = containers.Map('KeyType', 'int64', 'ValueType', 'any');
     end
     
 
@@ -101,9 +104,9 @@ methods
         disp(['stab_size=', num2str(stab_size), ' total spin:', num2str(Ns - 2*strcmp(obj.boundary, 'open'))])
         
         % Save
-        path = sprintf('./tmp/tab4unit_test.mat');
-        mkdir(path);
-        save(path, "tableau", "stab_size")
+        folder = sprintf('./tmp/');
+        mkdir(folder);
+        save(strjoin({folder, 'tab4unit_test.mat'}, ""), "tableau", "stab_size")
     end
 
 
@@ -204,9 +207,6 @@ methods
         row_idx = 0;
     end
     
-    
-    % function partial_trace_gausian(obj, )
-
 
     %% Random generation
     function [row, bond] = generate_bond(obj, x, y)
