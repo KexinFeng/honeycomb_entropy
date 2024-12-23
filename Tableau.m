@@ -12,6 +12,7 @@ end
 methods
     function obj = Tableau(varargin)
         ip = inputParser;
+        ip.KeepUnmatched = true;
         ip.addParameter('cir', 2);
         ip.addParameter('wid', 2);
         ip.addParameter('boundary', 'open');
@@ -87,7 +88,7 @@ methods
             end
         end
         if ~b
-            obj.render_table(obj.tab, 0, obj.cir, obj.wid);
+            obj.render_table();
             disp(str_arr);
             error('error: not pair satisfy tab property');
         end

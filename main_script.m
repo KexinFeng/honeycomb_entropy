@@ -1,5 +1,4 @@
-simul = Simulator('cir', 2, 'wid', 2);
+simul = Simulator('cir', 2, 'wid', 2, 'boundary', 'open');
 simul.verbose = true;
-simul.boundary = 'periodic';
-simul.T = 10;
+simul.T = 30;
 simul.simulate()

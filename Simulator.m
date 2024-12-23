@@ -31,13 +31,13 @@ methods
             obj.(field) = pars.(field);  % Dynamic field assignment
         end
         
-        obj.tableau = Tableau('cir', obj.cir, 'wid', obj.wid, 'boundary', obj.boundary);
+        obj.tableau = Tableau(varargin{:});
 
         if obj.verbose
             obj.tableau.render_table();
         end
 
-        obj.check_generator = [];
+        obj.check_generator = CheckGenerator(varargin{:});
     end
 
 
@@ -51,6 +51,19 @@ methods
             end
         end
         obj.tableau = tableau;
+
+        % Get the list of properties
+        propNames = properties(obj);
+        numProps = length(propNames);
+        kvList = cell(1, 2 * numProps); 
+        
+        % Construct the key-value list
+        for i = 1:numProps
+            kvList{2*i - 1} = propNames{i};  
+            kvList{2*i} = obj.(propNames{i});
+        end
+
+        obj.check_generator = CheckGenerator(kvList{:});
     end
     
 
@@ -129,10 +142,9 @@ methods
         % Measure on the unit cell (x, y)     
         cir = obj.cir;
         wid = obj.wid;
-        Ns = cir*wid*2;
     
-    
-        [row, bond] = obj.generate_bond(x, y);
+        
+        [row, bond] = obj.check_generator.generate_bond(x, y);
         if isempty(bond)
             return
         end
@@ -279,67 +291,6 @@ methods
         % obj.tableau = tableau;
     end
     
-
-    %% Random generation
-    function [row, bond] = generate_bond(obj, x, y)
-        cir = obj.cir;
-        wid = obj.wid;
-        
-        % Generate bond
-        if strcmp(obj.boundary, "periodic")
-            bond = randi([1, 3]); % 1:z, 2:x, 3:y
-        elseif strcmp(obj.boundary, 'open')
-            if x==1 && y==1 
-                bond = randsample([1, 3], 1);
-            elseif x == cir && y == wid
-                bond = [];
-                row = [];
-                return
-            elseif y == wid
-                bond = randsample([2, 3], 1);
-            elseif x == cir
-                bond = randsample([1, 2], 1);
-            else
-                bond = randi([1, 3]);
-            end
-        else
-            error('%s not right', obj.boundary)
-        end
-        
-        row = obj.bond2row(x, y, bond);
-    end
-
-
-    function row = bond2row(obj, x, y, bond)
-        % bond_names = ['Z', 'X', 'Y'];
-    
-        cir = obj.cir;
-        wid = obj.wid;
-        Ns = cir * wid * 2;
-    
-        row = zeros(1, Ns*2);
-        % Site index: x = 1~cir; y = 1~wid; ab = 0,1
-        pos = @(x, y, ab) y + wid.*(x-1) + cir*wid.*ab;
-    
-        % (x, y, 0)-X-(x, y , 1)
-        % (x, y+1, 0)-Z-(x, y, 1)
-        % (x+1, y, 0)-Y-(x, y, 1)
-        bin = dec2bin(bond, 2);
-        bin_arr = kron(str2num(bin(:)), [1; 1]);
-        
-        xs = [x, homod(x+(bond == 3), cir)];
-        ys = [y, homod(y+(bond == 1), wid)];
-        ab = [1, 0];
-        
-        idx = pos(xs, ys, ab);
-        idx = [idx, idx + Ns];
-        
-        row(idx) = reshape(bin_arr, size(idx));
-        % bond_names = ['Z', 'X', 'Y'];
-        % pauli = Util.row2pauli(row, cir, wid);
-        % fprintf('%s\n pauli: %s\n', bond_names{bond}, pauli)
-    end
-
 end
 end
 

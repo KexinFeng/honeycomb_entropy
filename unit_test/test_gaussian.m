@@ -3,34 +3,41 @@ addpath(genpath([filepath, '/../']));
 addpath(genpath([filepath, '/../../utils']));
 clc
 
-tab = load('../tmp/tab4unit_test.mat');
-tableau = tab.tableau;
-stab_size = tab.stab_size;
+tab = load('/Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/tmp/tab4unit_test.mat');
+tableau = Tableau('cir', 2, 'wid', 2, ...
+    'tab', tab.tab, 'stab_size', tab.stab_size);
 
+g1 = Simulator();
+g1.set_tableau(tableau);
 
-g1 = GaussianEliminator('cir', 2, 'wid', 2, ...
-    'tab', tableau, 'stab_size', stab_size);
-
-g2 = GaussianEliminator('cir', 2, 'wid', 2, ...
-    'tab', tableau, 'stab_size', stab_size);
+g2 = Simulator();
+g2.set_tableau(tableau);
 
 %%
-Util.render_table_destab(g1.tab, g1.stab_size, 2, 2);
+% Util.render_table(g1.tab, g1.stab_size, 2, 2);
+g1.tableau.render_table();
 
 g1.partial_trace(2);
-assert(g1.stab_size == 2);
-Util.render_table_destab(g1.tab, g1.stab_size, 2, 2);
-Util.pair_tab_property(g1.tab, 2, 2)
+assert(g1.tableau.stab_size == 2);
+g1.tableau.render_table();
+g1.tableau.pair_tab_property();
+% Util.render_table(g1.tab, g1.stab_size, 2, 2);
+% Util.pair_tab_property(g1.tab, 2, 2)
 
 g1.partial_trace(5);
-assert(g1.stab_size == 1);
-Util.render_table_destab(g1.tab, g1.stab_size, 2, 2);
+assert(g1.tableau.stab_size == 1);
+% Util.render_table(g1.tab, g1.stab_size, 2, 2);
+g1.tableau.render_table();
+g1.tableau.pair_tab_property();
 
 g2.partial_trace([2, 5]);
-assert(g2.stab_size == 1);
-assert(all(g2.tab(1:g2.stab_size, :) == g1.tab(1:g1.stab_size, :), 'all'));
-Util.render_table_destab(g2.tab, g2.stab_size, 2, 2);
+tableau2 = g2.tableau;
+tableau1 = g1.tableau;
 
-Util.pair_tab_property(g1.tab, 2, 2);
+assert(tableau2.stab_size == 1);
+assert(all(tableau2.tab(1:tableau2.stab_size, :) == tableau1.tab(1:tableau1.stab_size, :), 'all'));
+g2.tableau.render_table();
+g2.tableau.pair_tab_property();
+
 
 % dbstop = 1;
