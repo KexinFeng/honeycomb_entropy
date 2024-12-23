@@ -19,8 +19,6 @@ assert(scenario == 3);
 simul.scenario3(row1, row_idx);
 assert(simul.tableau.stab_size == 1);
 
-% Util.render_table_destab(tab, stab_size, cir, wid);
-% Util.pair_tab_property(tab, cir, wid);
 
 simul.tableau.render_table();
 simul.tableau.pair_tab_property();
@@ -35,23 +33,19 @@ assert(scenario == 3);
 simul.scenario3(row2, row_idx);
 assert(tableau.stab_size == 2);
 
-% Util.render_table_destab(tab, stab_size, cir, wid);
-% Util.pair_tab_property(tab, cir, wid);
+
 simul.tableau.render_table();
 simul.tableau.pair_tab_property();
 
 %% Y3Y5 * Z4Z7
 row3 = Util.pauli_product(row1, row2);
-% % print
-% Util.row2pauli(row3, cir, wid)
+
 
 [scenario, ~] = simul.check_scenario(row3);
 assert(scenario == 2);
 
 assert(tableau.stab_size == 2);
 
-% Util.render_table_destab(tab, stab_size, cir, wid);
-% Util.pair_tab_property(tab, cir, wid);
 simul.tableau.render_table();
 simul.tableau.pair_tab_property();
 
@@ -64,8 +58,6 @@ assert(scenario == 1);
 simul.scenario1(row4, row_idx);
 assert(tableau.stab_size == 2);
 
-% Util.render_table_destab(tab, stab_size, cir, wid);
-% Util.pair_tab_property(tab, cir, wid);
 
 simul.tableau.render_table();
 simul.tableau.pair_tab_property();
@@ -79,8 +71,6 @@ assert(scenario == 3);
 simul.scenario3(row5, row_idx);
 assert(tableau.stab_size == 3);
 
-% Util.render_table_destab(tab, stab_size, cir, wid);
-% Util.pair_tab_property(tab, cir, wid);
 
 simul.tableau.render_table();
 simul.tableau.pair_tab_property();

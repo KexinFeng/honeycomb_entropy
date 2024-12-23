@@ -81,34 +81,43 @@ classdef Util
         end
         
 
-        function pauli_str = row2pauli(row, cir, wid)
-            % 2:x, 1:z, 3:y
-            bond_names = ['Z', 'X', 'Y'];
-            Ns = cir * wid *2;
-            strArray = [];
-            assert(size(row, 2) == Ns * 2);
-            for ind = 1: Ns
-                bin = sum(row([ind, ind+Ns]).*[2, 1]);
-                if bin == 0
-                    continue;
+        function pauli_strs = row2pauli(rows, cir, wid)
+            if isscalar(size(rows))
+                rows = reshape(rows, 1, length(rows));
+            end
+            pauli_str_arr = [];
+            for i = 1:size(rows, 1)
+                row = rows(i, :);
+                % 2:x, 1:z, 3:y
+                bond_names = ['Z', 'X', 'Y'];
+                Ns = cir * wid *2;
+                strArray = [];
+                assert(size(row, 2) == Ns * 2);
+                for ind = 1: Ns
+                    bin = sum(row([ind, ind+Ns]).*[2, 1]);
+                    if bin == 0
+                        continue;
+                    end
+                    operator = bond_names(bin);
+                    % pos = @(x, y, ab) y + wid.*(x-1) + cir*wid.*ab;
+                    [y, x, a] = ind2sub([wid, cir, 2], ind);
+                    % [res, a1] = homod(ind, cir*wid);
+                    % [res, x1] = homod(res, wid);
+                    % y1 = res;
+                    % assert(x==x1 && y==y1 && a==a1);
+                    a = a-1;
+                    ab = triexp(a==0, "a", "b");
+                    string = sprintf("%s_%d", operator, ind);
+                    strArray = [strArray, string];
                 end
-                operator = bond_names(bin);
-                % pos = @(x, y, ab) y + wid.*(x-1) + cir*wid.*ab;
-                [y, x, a] = ind2sub([wid, cir, 2], ind);
-                % [res, a1] = homod(ind, cir*wid);
-                % [res, x1] = homod(res, wid);
-                % y1 = res;
-                % assert(x==x1 && y==y1 && a==a1);
-                a = a-1;
-                ab = triexp(a==0, "a", "b");
-                string = sprintf("%s_%d", operator, ind);
-                strArray = [strArray, string];
+                if ~isempty(strArray)
+                    pauli_str = strjoin(strArray, " ");
+                else
+                    pauli_str = "";
+                end
+                pauli_str_arr = [pauli_str_arr, pauli_str];
             end
-            if ~isempty(strArray)
-                pauli_str = strjoin(strArray, " ");
-            else
-                pauli_str = "";
-            end
+            pauli_strs = strjoin(pauli_str_arr, '\n');
         end
 
     end

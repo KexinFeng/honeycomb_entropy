@@ -196,8 +196,9 @@ methods
         Ns = size(row_measure, 2) / 2;
     
         % swap row_idx to Ns + stab_size + 1
-        row_idx_bar = homod(row_idx + Ns, 2*Ns);
         tableau.tab([row_idx, Ns + stab_size + 1], :) = tableau.tab([Ns + stab_size + 1, row_idx], :);
+        % swap row_idx_bar accordingly
+        row_idx_bar = homod(row_idx + Ns, 2*Ns);
         if row_idx_bar ~= Ns + stab_size + 1
             tableau.tab([row_idx_bar, stab_size + 1], :) = tableau.tab([stab_size + 1, row_idx_bar], :);
         end
@@ -238,11 +239,12 @@ methods
         row_idx = 0;
     end
 
+    
     %% Tracer
     function partial_trace(obj, qubits)
         tableau = obj.tableau;
-        Ns = obj.tableau.Ns;
-        stab_size = obj.tableau.stab_size;
+        Ns = tableau.Ns;
+        stab_size = tableau.stab_size;
 
         % search
         valid_stab_idx = Ns + (1: stab_size);
@@ -262,13 +264,11 @@ methods
         end
         assert(stab_size == length(valid_stab_idx));
         
-        src = Ns + (1: stab_size);
-        tableau.tab([src, valid_stab_idx], :) = ...
-            tableau.tab([valid_stab_idx, src], :);
-        tableau.tab([src - Ns, valid_stab_idx - Ns], :) = ...
-            tableau.tab([valid_stab_idx - Ns, src - Ns], :);
+        src = Ns + (1: tableau.stab_size);
+        new_order = [valid_stab_idx, setdiff(src, valid_stab_idx)];
+        tableau.tab(new_order, :) = tableau.tab(src, :);        
+        tableau.tab(new_order - Ns, :) = tableau.tab(src - Ns, :);
 
-        % obj.tableau = tableau;
         tableau.stab_size = stab_size;
     end
 
