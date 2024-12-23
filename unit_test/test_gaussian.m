@@ -3,7 +3,8 @@ addpath(genpath([filepath, '/../']));
 addpath(genpath([filepath, '/../../utils']));
 clc
 
-tab = load('/Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/tmp/tab4unit_test.mat');
+tab = load('/Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/unit_test/tab4unit_test.mat');
+tab = load('/Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/unit_test/tab4unit_test.mat');
 tableau = Tableau('cir', 2, 'wid', 2, ...
     'tab', tab.tab, 'stab_size', tab.stab_size);
 
@@ -13,10 +14,12 @@ g1.set_tableau(tableau);
 g2 = Simulator();
 g2.set_tableau(tableau);
 
-%%
-% Util.render_table(g1.tab, g1.stab_size, 2, 2);
 g1.tableau.render_table();
+g1.tableau.pair_tab_property();
+g2.tableau.render_table();
+g2.tableau.pair_tab_property();
 
+%%
 g1.partial_trace(2);
 assert(g1.tableau.stab_size == 2);
 g1.tableau.render_table();
@@ -40,4 +43,6 @@ g2.tableau.render_table();
 g2.tableau.pair_tab_property();
 
 
-% dbstop = 1;
+%%
+fprintf('success\n')
+dbstop = 1;

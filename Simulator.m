@@ -134,7 +134,7 @@ methods
         stab_size = tableau.stab_size;
         folder = sprintf('./tmp/');
         mkdir(folder);
-        save(strjoin({folder, 'tab4unit_test.mat'}, ""), "tab", "stab_size")
+        save(strjoin({folder, sprintf('tmp%d.mat', obj.T)}, ""), "tab", "stab_size")
     end
 
 
