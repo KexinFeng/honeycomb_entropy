@@ -77,50 +77,55 @@ methods
             pause(0.01);        
         end
         
-        tableau = obj.tableau.tab;
-        stab_size = obj.tableau.stab_size;
+        tableau = obj.tableau;
+        % tab = obj.tableau.tab;
+        % stab_size = obj.tableau.stab_size;
 
         %% main loop
         for step = 1:T
             for idx = 1:cir*wid %#ok<*PROP>
                 [y, x] = homod(idx, wid);
                 % [tableau, stab_size, bond] = measure_rank(x, y, tableau, stab_size, pars);
-                [tableau, stab_size, bond] = obj.measure_destab(x, y, tableau, stab_size);
+                bond = obj.measure_destab(x, y);
                 if isempty(bond)
                     continue
                 end
                 
                 if obj.verbose
-                    Util.pair_tab_property(tableau, cir, wid);
+                    % Util.pair_tab_property(tab, cir, wid);
+                    tableau.pair_tab_property();
                     % print
                     fprintf('\nidx: %d\n', idx);
-                    Util.render_table_destab(tableau, stab_size, cir, wid);
+                    tableau.render_table();
                 end
             end
     
             if obj.verbose
-                Util.pair_tab_property(tableau, cir, wid);
-                fprintf('step=%d, r=%d\n\n', step, stab_size)
+                % Util.pair_tab_property(tab, cir, wid);
+                tableau.pair_tab_property()
+                fprintf('step=%d, r=%d\n\n', step, tableau.stab_size)
                 disp(' ')
             end
     
             % Plotting
             if obj.plotting
-                plot(step, Ns - 2*strcmp(obj.boundary, 'open') - stab_size, '*', 'Color', 'b');
+                plot(step, Ns - 2*strcmp(obj.boundary, 'open') - obj.tableau.stab_size, '*', 'Color', 'b');
                 pause(0.01);
             end
         end
         
-        disp(['stab_size=', num2str(stab_size), ' total spin:', num2str(Ns - 2*strcmp(obj.boundary, 'open'))])
+        disp(['stab_size=', num2str(tableau.stab_size), ' total spin:', num2str(Ns - 2*strcmp(obj.boundary, 'open'))])
         
         % Save
+        tab = tableau.tab;
+        stab_size = tableau.stab_size;
         folder = sprintf('./tmp/');
         mkdir(folder);
-        save(strjoin({folder, 'tab4unit_test.mat'}, ""), "tableau", "stab_size")
+        save(strjoin({folder, 'tab4unit_test.mat'}, ""), "tab", "stab_size")
     end
 
 
-    function [tab, stab_size, bond] = measure_destab(obj, x, y, tab, stab_size)
+    function bond = measure_destab(obj, x, y)
         % Measure on the unit cell (x, y)     
         cir = obj.cir;
         wid = obj.wid;
@@ -137,64 +142,70 @@ methods
         end
     
         
-        [scenario, row_idx] = obj.check_scenario(tab, row, stab_size);
+        [scenario, row_idx] = obj.check_scenario(row);
         
         if scenario == 1
             % stochastic output containing de-stablizer
-            tab = obj.scenario1(tab, row, row_idx);
+            obj.scenario1(row, row_idx);
         elseif scenario == 2
             % deterministic output
             % ;
         else
             % stochastic output containing enhanced space
-            [tab, stab_size] = obj.scenario3(tab, row, row_idx, stab_size);
+            obj.scenario3(row, row_idx);
         end
      
     end
     
     
     %% Tableaue processing
-    function tab = scenario1(~, tab, row_measure, row_idx)
+    function scenario1(obj, row_measure, row_idx)
+        tableau = obj.tableau;        
         % row_idx points to the row anticommuting with row_measure
         Ns = size(row_measure, 2) / 2;
         
-        row_append = tab(row_idx, :);
+        row_append = tableau.tab(row_idx, :);
         % restore the tableau property
         for i = [row_idx + 1: Ns*2, 1: Ns]
-            if Util.symplectic_inner_product(tab(i, :), row_measure, Ns)
-                tab(i, :) = Util.pauli_product(row_append, tab(i, :));
+            if Util.symplectic_inner_product(tableau.tab(i, :), row_measure, Ns)
+                tableau.tab(i, :) = Util.pauli_product(row_append, tableau.tab(i, :));
             end
         end
-        tab(row_idx, :) = row_measure;
-        tab(row_idx - Ns, :) = row_append;
+        tableau.tab(row_idx, :) = row_measure;
+        tableau.tab(row_idx - Ns, :) = row_append;
     end
     
 
-    function [tab, stab_size] = scenario3(obj, tab, row_measure, row_idx, stab_size)
+    function scenario3(obj, row_measure, row_idx)
+        tableau = obj.tableau;
+        stab_size = tableau.stab_size;
+        
         % row_idx points to the row anticommuting with row_measure
         Ns = size(row_measure, 2) / 2;
     
         % swap row_idx to Ns + stab_size + 1
         row_idx_bar = homod(row_idx + Ns, 2*Ns);
-        tab([row_idx, Ns + stab_size + 1], :) = tab([Ns + stab_size + 1, row_idx], :);
+        tableau.tab([row_idx, Ns + stab_size + 1], :) = tableau.tab([Ns + stab_size + 1, row_idx], :);
         if row_idx_bar ~= Ns + stab_size + 1
-            tab([row_idx_bar, stab_size + 1], :) = tab([stab_size + 1, row_idx_bar], :);
+            tableau.tab([row_idx_bar, stab_size + 1], :) = tableau.tab([stab_size + 1, row_idx_bar], :);
         end
         row_idx = Ns + stab_size + 1;
     
-        tab = obj.scenario1(tab, row_measure, row_idx);
-        stab_size = stab_size + 1;
+        obj.scenario1(row_measure, row_idx);
+        tableau.stab_size = stab_size + 1;
     end
     
     
-    function [scenario, row_idx] = check_scenario(obj, tab, row_measure, stab_size)
-        Ns = obj.cir * obj.wid * 2;
+    function [scenario, row_idx] = check_scenario(obj, row_measure)
+        Ns = obj.tableau.Ns;
+        tableau = obj.tableau;
+        stab_size = obj.tableau.stab_size;
         
         Nrow = Ns - triexp(strcmp(obj.boundary, 'open'), 2, 0);
     
         % scenario 1
         for i = Ns+1: Ns + stab_size
-            if Util.symplectic_inner_product(tab(i, :), row_measure, Ns)
+            if Util.symplectic_inner_product(tableau.tab(i, :), row_measure, Ns)
                 scenario = 1;
                 row_idx = i;
                 return
@@ -203,7 +214,7 @@ methods
         
         % scenario 3
         for i = [Ns + stab_size + 1: Ns + Nrow, stab_size + 1: Nrow]
-            if Util.symplectic_inner_product(tab(i, :), row_measure, Ns)
+            if Util.symplectic_inner_product(tableau.tab(i, :), row_measure, Ns)
                 scenario = 3;
                 row_idx = i;
                 return
