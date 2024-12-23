@@ -239,7 +239,7 @@ methods
         row_idx = 0;
     end
 
-    
+
     %% Tracer
     function partial_trace(obj, qubits)
         tableau = obj.tableau;

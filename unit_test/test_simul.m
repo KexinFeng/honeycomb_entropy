@@ -2,6 +2,7 @@ filepath = fileparts(mfilename('fullpath'));
 addpath(genpath([filepath, '/../']));
 addpath(genpath([filepath, '/../../utils']));
 
+%%
 simul = Simulator('cir', 2, 'wid', 2);
 cir = simul.cir;
 wid = simul.wid;

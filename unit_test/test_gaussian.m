@@ -4,7 +4,7 @@ addpath(genpath([filepath, '/../../utils']));
 clc
 
 %%
-tab = load('/Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/unit_test/tab_c2w2T10.mat');
+tab = load('/Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/unit_test/data/tab_c2w2T10.mat');
 tableau = Tableau('cir', 2, 'wid', 2, ...
     'tab', tab.tab, 'stab_size', tab.stab_size);
 
@@ -41,7 +41,7 @@ g2.tableau.pair_tab_property();
 
 
 %%
-tab2 = load('/Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/unit_test/tab_c2w2T30.mat');
+tab = load('/Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/unit_test/data/tab_c2w2T30.mat');
 tableau = Tableau('cir', 2, 'wid', 2, ...
     'tab', tab.tab, 'stab_size', tab.stab_size);
 
