@@ -37,7 +37,7 @@ methods
             obj.tableau.render_table();
         end
 
-        obj.check_generator = CheckGenerator(varargin{:});
+        obj.check_generator = CheckGeneratorPlaq(varargin{:});
     end
 
 
