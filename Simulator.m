@@ -168,8 +168,8 @@ methods
         end
      
     end
-    
-    
+
+
     %% Tableaue processing
     function scenario1(obj, row_measure, row_idx)
         tableau = obj.tableau;        

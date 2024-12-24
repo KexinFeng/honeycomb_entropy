@@ -34,7 +34,6 @@ assert(scenario == 3);
 simul.scenario3(row2, row_idx);
 assert(tableau.stab_size == 2);
 
-
 simul.tableau.render_table();
 simul.tableau.pair_tab_property();
 

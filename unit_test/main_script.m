@@ -15,6 +15,6 @@ simul = Simulator('cir', 2, 'wid', 2, 'boundary', 'open');
 generator = CheckGeneratorPlaq('cir', 2, 'wid', 2, 'boundary', 'open');
 simul.check_generator = generator;
 simul.verbose = true;
-simul.T = 20;
+simul.T = 10;
 simul.simulate()
 
