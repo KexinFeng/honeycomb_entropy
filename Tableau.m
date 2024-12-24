@@ -45,8 +45,66 @@ methods
             obj.tab = tab;
         end
     end
-    
 
+
+    function tableau = clone(obj)
+        kv_list = get_param(obj);
+        tableau = Tableau(kv_list{:});
+    end
+
+
+    function entropy = get_entropy(obj)
+        entropy = obj.Ns - 2*strcmp(obj.boundary, 'open') - obj.stab_size; % frozen qubits are discarded.
+    end
+    
+    %% Tracer
+    function partial_trace(obj, qubits)
+        Ns = obj.Ns;
+        stab_size = obj.stab_size;
+
+        % search
+        valid_stab_idx = Ns + (1: stab_size);
+        for qubit = qubits
+            row_idx_x = valid_stab_idx(obj.tab(valid_stab_idx, qubit) == 1);
+            if ~isempty(row_idx_x)
+                obj.add_onto(row_idx_x(1), row_idx_x(2:end));
+                valid_stab_idx(valid_stab_idx == row_idx_x(1)) = [];
+            end
+            row_idx_z = valid_stab_idx(obj.tab(valid_stab_idx, qubit + Ns) == 1);
+            if ~isempty(row_idx_z)
+                obj.add_onto(row_idx_z(1), row_idx_z(2:end));
+                valid_stab_idx(valid_stab_idx == row_idx_z(1)) = [];
+            end
+            
+            stab_size = stab_size - ~isempty(row_idx_x) - ~isempty(row_idx_z);
+        end
+        assert(stab_size == length(valid_stab_idx));
+        
+        src = Ns + (1: obj.stab_size);
+        new_order = [valid_stab_idx, setdiff(src, valid_stab_idx)];
+        obj.tab(new_order, :) = obj.tab(src, :);        
+        obj.tab(new_order - Ns, :) = obj.tab(src - Ns, :);
+
+        obj.stab_size = stab_size;
+    end
+
+
+    function add_onto(obj, row_src, row_tgt)
+        if isempty(row_tgt)
+            return
+        end
+        Ns = obj.Ns;
+
+        row = obj.tab(row_src, :);
+        obj.tab(row_tgt, :) = mod(obj.tab(row_tgt, :) + row, 2);
+        
+        % destab update
+        row_src_bar = row_src - Ns;
+        row_tgt_bar = row_tgt - Ns;
+        obj.tab(row_src_bar, :) = mod(obj.tab(row_src_bar, :) + sum(obj.tab(row_tgt_bar, :), 1), 2);
+    end
+   
+    %% Utility
     function render_table(obj)
         obj.Ns = obj.cir * obj.wid * 2;
         for i = 1 : obj.Ns*2

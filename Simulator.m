@@ -14,6 +14,7 @@ end
 methods
     function obj = Simulator(varargin)
         ip = inputParser;
+        ip.KeepUnmatched = true;
         ip.addParameter('cir', 10);
         ip.addParameter('wid', 10);
         ip.addParameter('boundary', 'open');
@@ -52,17 +53,7 @@ methods
         end
         obj.tableau = tableau;
 
-        % Get the list of properties
-        propNames = properties(obj);
-        numProps = length(propNames);
-        kvList = cell(1, 2 * numProps); 
-        
-        % Construct the key-value list
-        for i = 1:numProps
-            kvList{2*i - 1} = propNames{i};  
-            kvList{2*i} = obj.(propNames{i});
-        end
-
+        kvList = get_param(obj);
         obj.check_generator = CheckGenerator(kvList{:});
     end
     
@@ -73,7 +64,7 @@ methods
         addpath(genpath([filepath, '/../utils']));
         % addpath([filepath, '/util.m']);
         
-        rng(24);
+        % rng(24);
         clc;
     
         %% prepare
@@ -122,19 +113,21 @@ methods
     
             % Plotting
             if obj.plotting
-                plot(step, Ns - 2*strcmp(obj.boundary, 'open') - obj.tableau.stab_size, '*', 'Color', 'b');
+                % plot(step, Ns - 2*strcmp(obj.boundary, 'open') - obj.tableau.stab_size, '*', 'Color', 'b');
+                plot(step, obj.tableau.get_entropy(), '*', 'Color', 'b');
                 pause(0.01);
             end
         end
         
         disp(['stab_size=', num2str(tableau.stab_size), ' total spin:', num2str(Ns - 2*strcmp(obj.boundary, 'open'))])
+        disp(['entropy=', num2str(tableau.get_entropy())])
         
-        % Save
-        tab = tableau.tab;
-        stab_size = tableau.stab_size;
-        folder = sprintf('./tmp/');
-        mkdir(folder);
-        save(strjoin({folder, sprintf('tmp%d.mat', obj.T)}, ""), "tab", "stab_size")
+        % % Save
+        % tab = tableau.tab;
+        % stab_size = tableau.stab_size;
+        % folder = sprintf('./tmp/');
+        % mkdir(folder);
+        % save(strjoin({folder, sprintf('tmp%d.mat', obj.T)}, ""), "tab", "stab_size")
     end
 
 
@@ -239,57 +232,6 @@ methods
         row_idx = 0;
     end
 
-
-    %% Tracer
-    function partial_trace(obj, qubits)
-        tableau = obj.tableau;
-        Ns = tableau.Ns;
-        stab_size = tableau.stab_size;
-
-        % search
-        valid_stab_idx = Ns + (1: stab_size);
-        for qubit = qubits
-            row_idx_x = valid_stab_idx(tableau.tab(valid_stab_idx, qubit) == 1);
-            if ~isempty(row_idx_x)
-                obj.add_onto(row_idx_x(1), row_idx_x(2:end));
-                valid_stab_idx(valid_stab_idx == row_idx_x(1)) = [];
-            end
-            row_idx_z = valid_stab_idx(tableau.tab(valid_stab_idx, qubit + Ns) == 1);
-            if ~isempty(row_idx_z)
-                obj.add_onto(row_idx_z(1), row_idx_z(2:end));
-                valid_stab_idx(valid_stab_idx == row_idx_z(1)) = [];
-            end
-            
-            stab_size = stab_size - ~isempty(row_idx_x) - ~isempty(row_idx_z);
-        end
-        assert(stab_size == length(valid_stab_idx));
-        
-        src = Ns + (1: tableau.stab_size);
-        new_order = [valid_stab_idx, setdiff(src, valid_stab_idx)];
-        tableau.tab(new_order, :) = tableau.tab(src, :);        
-        tableau.tab(new_order - Ns, :) = tableau.tab(src - Ns, :);
-
-        tableau.stab_size = stab_size;
-    end
-
-
-    function add_onto(obj, row_src, row_tgt)
-        if isempty(row_tgt)
-            return
-        end
-        tableau = obj.tableau;
-        Ns = obj.tableau.Ns;
-
-        row = tableau.tab(row_src, :);
-        tableau.tab(row_tgt, :) = mod(tableau.tab(row_tgt, :) + row, 2);
-        
-        % destab update
-        row_src_bar = row_src - Ns;
-        row_tgt_bar = row_tgt - Ns;
-        tableau.tab(row_src_bar, :) = mod(tableau.tab(row_src_bar, :) + sum(tableau.tab(row_tgt_bar, :), 1), 2);
-    
-        % obj.tableau = tableau;
-    end
     
 end
 end
