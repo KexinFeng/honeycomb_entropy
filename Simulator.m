@@ -109,7 +109,7 @@ methods
                     tableau.pair_tab_property();
                     % print
                     fprintf('\nidx: %d\n', idx);
-                    tableau.render_table();
+                    % tableau.render_table();
                 end
             end
     

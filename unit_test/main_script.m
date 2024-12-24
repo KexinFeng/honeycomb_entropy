@@ -35,12 +35,16 @@ simul.T = 10;
 simul.simulate()
 
 %%
+clc;
+
 generator = simul.check_generator;
 
 generator.set_probs([1/3, 1/3, 0, 1/3]);
 simul.simulate();
 
-generator.set_probs([0, 0, 1/2, 1/2]);
+clc
+fprintf('\n------------\n')
+generator.set_probs([0, 0, 1/2, 1/2]); % z:1, x:2, y:3, p:4
 simul.simulate();
 
 dbstop = 1;
