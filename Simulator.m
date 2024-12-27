@@ -2,10 +2,10 @@ classdef Simulator < handle
 properties
     cir
     wid
+    T
     plotting
     boundary
     verbose
-    T
     %% internal 
     tableau
     check_generator
@@ -82,8 +82,6 @@ methods
         end
         
         tableau = obj.tableau;
-        % tab = obj.tableau.tab;
-        % stab_size = obj.tableau.stab_size;
 
         %% main loop
         for step = 1:T

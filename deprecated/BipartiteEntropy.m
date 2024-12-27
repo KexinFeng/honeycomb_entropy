@@ -42,13 +42,12 @@ methods
     end
 
         
-    function res = runner(obj, L)
+    function res = runner(~, L)
         res = struct();
         kv_list = get_param(obj, 'cir', L, 'wid', L);
-        obj.simulator = Simulator(kv_list{:});
-        ls = 1: ceil(L/num_sim): L;
-        
-        simul = obj.simulator;
+        simul = Simulator(kv_list{:});
+        ls = 1: ceil(L/num): L;
+
         simul.simulate();
         
         % measure
