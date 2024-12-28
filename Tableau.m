@@ -13,6 +13,7 @@ methods
     function obj = Tableau(varargin)
         ip = inputParser;
         ip.KeepUnmatched = true;
+        ip.PartialMatching = false;
         ip.addParameter('cir', 2);
         ip.addParameter('wid', 2);
         ip.addParameter('boundary', 'open');
@@ -59,17 +60,21 @@ methods
     
     %% Tracer
     function partial_trace(obj, qubits)
+        % qubits: [1, |qubits|]
+        
         Ns = obj.Ns;
         stab_size = obj.stab_size;
 
         % search
         valid_stab_idx = Ns + (1: stab_size);
         for qubit = qubits
+            % Find all Xs on the qubit, process them and remove the first
             row_idx_x = valid_stab_idx(obj.tab(valid_stab_idx, qubit) == 1);
             if ~isempty(row_idx_x)
                 obj.add_onto(row_idx_x(1), row_idx_x(2:end));
                 valid_stab_idx(valid_stab_idx == row_idx_x(1)) = [];
             end
+            % Find all Zs on the quit, process them and remove the first
             row_idx_z = valid_stab_idx(obj.tab(valid_stab_idx, qubit + Ns) == 1);
             if ~isempty(row_idx_z)
                 obj.add_onto(row_idx_z(1), row_idx_z(2:end));
@@ -80,6 +85,7 @@ methods
         end
         assert(stab_size == length(valid_stab_idx));
         
+        % Re-org
         src = Ns + (1: obj.stab_size);
         new_order = [valid_stab_idx, setdiff(src, valid_stab_idx)];
         obj.tab(new_order, :) = obj.tab(src, :);        

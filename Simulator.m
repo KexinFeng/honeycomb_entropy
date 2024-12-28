@@ -15,6 +15,7 @@ methods
     function obj = Simulator(varargin)
         ip = inputParser;
         ip.KeepUnmatched = true;
+        ip.PartialMatching = false;
         ip.addParameter('cir', 10);
         ip.addParameter('wid', 10);
         ip.addParameter('boundary', 'open');
@@ -32,8 +33,8 @@ methods
             obj.(field) = pars.(field);  % Dynamic field assignment
         end
         
+        % Internal
         obj.tableau = Tableau(varargin{:});
-
         if obj.verbose
             obj.tableau.render_table();
         end
@@ -167,8 +168,9 @@ methods
         % row_idx points to the row anticommuting with row_measure
         Ns = size(row_measure, 2) / 2;
         
+        % Find the first non-commuting row
         row_append = tableau.tab(row_idx, :);
-        % restore the tableau property
+        % Restore the tableau property for the rest non-commuting rows
         for i = [row_idx + 1: Ns*2, 1: Ns]
             if Util.symplectic_inner_product(tableau.tab(i, :), row_measure, Ns)
                 tableau.tab(i, :) = Util.pauli_product(row_append, tableau.tab(i, :));
@@ -186,11 +188,12 @@ methods
         % row_idx points to the row anticommuting with row_measure
         Ns = size(row_measure, 2) / 2;
     
-        % swap row_idx to Ns + stab_size + 1
+        % Swap row_idx to Ns + stab_size + 1
         tableau.tab([row_idx, Ns + stab_size + 1], :) = tableau.tab([Ns + stab_size + 1, row_idx], :);
-        % swap row_idx_bar accordingly
+        % Swap row_idx_bar accordingly
         row_idx_bar = homod(row_idx + Ns, 2*Ns);
         if row_idx_bar ~= Ns + stab_size + 1
+            % Deduplicate the swap
             tableau.tab([row_idx_bar, stab_size + 1], :) = tableau.tab([stab_size + 1, row_idx_bar], :);
         end
         row_idx = Ns + stab_size + 1;
@@ -230,7 +233,6 @@ methods
         row_idx = 0;
     end
 
-    
 end
 end
 

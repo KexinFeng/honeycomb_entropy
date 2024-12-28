@@ -79,9 +79,9 @@ methods
         bin = dec2bin(bond, 2);
         bin_arr = kron(str2num(bin(:)), [1; 1]);
         
-        xs = [x, homod(x+(bond == 3), cir)];
-        ys = [y, homod(y+(bond == 1), wid)];
-        ab = [1, 0];
+        xs = [homod(x+(bond == 3), cir), x];
+        ys = [homod(y+(bond == 1), wid), y];
+        ab = [0, 1];
         
         row = obj.fill_row_entry(row, bin_arr, xs, ys, ab);
         % bond_names = ['Z', 'X', 'Y'];
@@ -91,6 +91,8 @@ methods
 
 
     function row = fill_row_entry(obj, row, bin_arr, xs, ys, ab)
+        % bin_arr represents a bilinear pauli operator @ (xs, ys, ab)
+
         cir = obj.cir;
         wid = obj.wid;
         Ns = obj.Ns;
@@ -102,6 +104,14 @@ methods
         row(idx) = reshape(bin_arr, size(idx)); 
     end
 
+
+    % function len2qubits(obj, sys_len)
+    %     if ~strcmp(obj.boundary, 'periodic')
+    %         error('Unsupported')
+    %     end
+    % 
+    % 
+    % end
 end
 end
 

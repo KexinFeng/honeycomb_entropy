@@ -8,3 +8,9 @@
 /dataSources.local.xml
 
 *.xml
+
+*.pdf
+*.mat
+*.eps
+
+*.DS_Store
