@@ -3,19 +3,20 @@ properties
     cir
     wid
     boundary
-
     % internal
     Ns
     check_names
+    identifier
 end
 
 methods
     function obj = CheckGenerator(varargin)
         ip = inputParser;
-        ip.KeepUnmatched = true; % Allow unmatched parameters
-        ip.addParameter('cir', 2);
-        ip.addParameter('wid', 2);
-        ip.addParameter('boundary', 'open');
+        ip.KeepUnmatched = true; 
+        ip.PartialMatching = false;
+        ip.addParameter('cir', 4);
+        ip.addParameter('wid', 4);
+        ip.addParameter('boundary', 'periodic');
 
         % Parse input arguments
         ip.parse(varargin{:});
@@ -27,10 +28,11 @@ methods
             field = fields{i};
             obj.(field) = pars.(field); % Dynamic field assignment
         end
-
+        
+        % Internal
         obj.Ns = obj.cir * obj.wid * 2;
-
         obj.check_names = {'Z', 'X', 'Y', 'P'};
+        obj.identifier = Identifier(varargin{:});
     end
 
         
@@ -79,39 +81,83 @@ methods
         bin = dec2bin(bond, 2);
         bin_arr = kron(str2num(bin(:)), [1; 1]);
         
-        xs = [homod(x+(bond == 3), cir), x];
-        ys = [homod(y+(bond == 1), wid), y];
+        xs = [x+(bond == 3), x];
+        ys = [y+(bond == 1), y];
         ab = [0, 1];
-        
+        [xs, ys] = obj.identifier.comb(xs, ys);
         row = obj.fill_row_entry(row, bin_arr, xs, ys, ab);
         % bond_names = ['Z', 'X', 'Y'];
         % pauli = Util.row2pauli(row, cir, wid);
         % fprintf('%s\n pauli: %s\n', bond_names{bond}, pauli)
     end
+    
+
+    function ret = pos(obj, x, y, ab)
+        % Site index: x = 1~cir; y = 1~wid; ab = 0,1
+        % pos = @(x, y, ab) y + wid.*(x-1) + cir*wid.*ab;
+        ret = y + obj.wid .* (x-1) + obj.cir * obj.wid .* ab;
+    end
+
+
+    function [xs, ys, as] = pos_reverse(obj, lindex)
+        % pos = @(x, y, ab) y + wid.*(x-1) + cir*wid.*ab;
+        [ys, xs, as] = ind2sub([obj.wid, obj.cir, 2], lindex);
+        % [res, a1] = homod(ind, cir*wid);
+        % [res, x1] = homod(res, wid);
+        % y1 = res;
+        % assert(x==x1 && y==y1 && a==a1);
+    end
 
 
     function row = fill_row_entry(obj, row, bin_arr, xs, ys, ab)
         % bin_arr represents a bilinear pauli operator @ (xs, ys, ab)
-
-        cir = obj.cir;
-        wid = obj.wid;
-        Ns = obj.Ns;
-    
-        % Site index: x = 1~cir; y = 1~wid; ab = 0,1
-        pos = @(x, y, ab) y + wid.*(x-1) + cir*wid.*ab;
-        idx = pos(xs, ys, ab);
-        idx = [idx, idx + Ns];
+        idx = obj.pos(xs, ys, ab);
+        idx = [idx, idx + obj.Ns];
         row(idx) = reshape(bin_arr, size(idx)); 
     end
 
 
-    % function len2qubits(obj, sys_len)
-    %     if ~strcmp(obj.boundary, 'periodic')
-    %         error('Unsupported')
-    %     end
-    % 
-    % 
-    % end
+    function ret = len2qubits(obj, delta_x, varargin)
+        % [0, delta_x) right end excluded
+        ip = inputParser;
+        ip.KeepUnmatched = true; 
+        ip.PartialMatching = false; 
+        ip.addParameter('start', 1);
+
+        % Parse input arguments
+        ip.parse(varargin{:});
+        pars = ip.Results;
+
+        if ~strcmp(obj.boundary, 'periodic')
+            error('Unsupported')
+        end
+        
+        delta_ys_a_1 = 0: 2: obj.wid - 2;
+        delta_xs_a_1 = 0: -1: -(obj.wid/2 - 1);
+        
+        delta_ys_b_1 = 1: 2: obj.wid - 1;
+        delta_xs_b_1 = -1: -1: -obj.wid/2;
+        
+        delta_ys_a_2 = 1: 2: obj.wid - 1;
+        delta_xs_a_2 = 0: -1: -(obj.wid/2 - 1);
+
+        delta_ys_b_2 = 0: 2: obj.wid - 2;
+        delta_xs_b_2 = 0: -1: -(obj.wid/2 - 1);
+
+        unit_ys = [delta_ys_a_1, delta_ys_b_1, delta_ys_a_2, delta_ys_b_2];
+        unit_xs = [delta_xs_a_1, delta_xs_b_1, delta_xs_a_2, delta_xs_b_2];
+        unit_as = [zeros(size(delta_ys_a_1)), ones(size(delta_ys_b_1)), ...
+            zeros(size(delta_ys_a_1)), ones(size(delta_ys_b_1))];
+
+        translate_x = 0: delta_x - 1;
+        xs = pars.start + unit_xs' + translate_x;
+        ys = 1 + unit_ys' + zeros(size(translate_x));
+        as = unit_as' + zeros(size(translate_x));
+        
+        [xs_rect, ys_rect] = obj.identifier.comb(reshape(xs, 1, []), reshape(ys, 1, []));
+        as_rect = reshape(as, 1, []);
+        ret = obj.pos(xs_rect, ys_rect, as_rect);
+    end
 end
 end
 

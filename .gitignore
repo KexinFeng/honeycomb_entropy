@@ -9,8 +9,8 @@
 
 *.xml
 
-*.pdf
 *.mat
 *.eps
 
 *.DS_Store
+*.asv

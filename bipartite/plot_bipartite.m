@@ -19,8 +19,10 @@ else
     hb = errorbar(xs, ys, pars.err{1}, '*b-');
 end
 
+xlabel('l/L')
+ylabel('entropy')
 
-legend(hb, pars.legend_str, 'AutoUpdate','off');
+legend(hb, pars.legend_str, 'AutoUpdate', 'off', 'Location', 'southeast');
 title(title_str);
 
 

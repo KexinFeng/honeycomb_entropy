@@ -2,12 +2,14 @@ classdef CheckGeneratorPlaq < CheckGenerator
 properties
     probs
 end
+
 methods   
     function obj = CheckGeneratorPlaq(varargin)
         obj@CheckGenerator(varargin{:});
         
         ip = inputParser;
         ip.KeepUnmatched = true;
+        ip.PartialMatching = false;
         ip.addParameter('probs', [1/4, 1/4, 1/4, 1/4]);
         ip.parse(varargin{:});
         pars = ip.Results;
@@ -100,17 +102,19 @@ methods
         % Z
         bin = [0; 1];
         bin_arr = kron(bin, [1; 1]);
-        xs = [homod(x-1, cir), homod(x-1, cir)];
-        ys = [homod(y+1, wid), y];
+        xs = [x-1, x-1];
+        ys = [y+1, y];
         ab = [0, 1];
+        [xs, ys] = obj.identifier.comb(xs, ys);
         row = obj.fill_row_entry(row, bin_arr, xs, ys, ab);
 
         % Y
         bin = [1; 1];
         bin_arr = kron(bin, [1; 1]);
-        xs = [x, homod(x-1, cir)];
-        ys = [homod(y+1, wid), homod(y+1, wid)];
+        xs = [x, x-1];
+        ys = [y+1, y+1];
         ab = [0, 1];
+        [xs, ys] = obj.identifier.comb(xs, ys);
         row = obj.fill_row_entry(row, bin_arr, xs, ys, ab);
 
         % check_names = ['Z', 'X', 'Y'];

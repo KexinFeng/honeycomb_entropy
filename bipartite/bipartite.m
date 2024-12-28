@@ -12,24 +12,25 @@ ip = inputParser;
 ip.KeepUnmatched = true;
 ip.PartialMatching = false;
 
-ip.addParameter('cir', 5);
-ip.addParameter('wid', 5);
+ip.addParameter('cir', 8);
+ip.addParameter('wid', 8);
 ip.addParameter('boundary', 'periodic');
+ip.addParameter('shift', 0);
 ip.addParameter('T', 30);
 ip.addParameter('verbose', false);
 ip.addParameter('probs', [1/4, 1/4, 1/4, 1/4]);
 ip.addParameter('num', 8);
 ip.addParameter('plotting', 1);
-ip.addParameter('update', 0);
+ip.addParameter('update', 1);
 
 ip.parse(varargin{:});
 pars = ip.Results;
 pars.wid = pars.cir;
 
 % Convert pars to a cell array of parameter-value pairs
-fields = fieldnames(pars);      % Get field names
-values = struct2cell(pars);     % Get field values
-varargin = reshape([fields, values]', 1, []); % Interleave fields and values
+fields = fieldnames(pars);      
+values = struct2cell(pars);     
+varargin = reshape([fields, values]', 1, []); 
 
 %%
 path = sprintf('./data_%s/', 'bipartite');
@@ -52,10 +53,10 @@ else
     %% measure
     ls = 1: ceil(pars.cir / pars.num): pars.cir;
     entropies = zeros(size(ls));
-    for idx = 1:length(ls)
+    for idx = 1: length(ls)
         tableau = simul.tableau.clone();
-        qubits = []; % f(l)
-        tableau.partial_trace(qubits);
+        qubits2trace = simul.check_generator.len2qubits(ls(idx), 'start', 1);
+        tableau.partial_trace(qubits2trace);
         entropies(idx) = tableau.get_entropy();
     end
     
@@ -68,7 +69,7 @@ else
 end
     
 output = {entropies};
-xs = ls;
+xs = ls / pars.cir;
 %%
 if pars.plotting    
     title_str = {'title', 'sub'};

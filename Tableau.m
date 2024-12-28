@@ -36,7 +36,7 @@ methods
         if isempty(obj.frozen_qubits)
             obj.frozen_qubits = containers.Map('KeyType', 'int64', 'ValueType', 'any');
         end
-
+        
         if isempty(obj.tab)
             Ns = obj.Ns;
             tab = eye(Ns*2, Ns*2);
