@@ -158,7 +158,9 @@ methods
             xs(step) = step;
         end
         
-        tableau.render_table()
+        if obj.verbose
+            tableau.render_table()
+        end
         disp(['stab_size=', num2str(tableau.stab_size), ' total spin:', num2str(Ns - 2*strcmp(obj.boundary, 'open'))])
         disp(['entropy=', num2str(tableau.get_entropy())])
         
@@ -175,20 +177,20 @@ methods
         % Measure on the unit cell (x, y)     
         cir = obj.cir;
         wid = obj.wid;
-    
-        
+
+
         [row, bond] = obj.check_generator.generate_bond(x, y);
         if isempty(bond)
             return
         end
-    
+
         if obj.verbose
            fprintf('check: %s\n', Util.row2pauli(row, cir, wid))
         end
-    
-        
+
+
         [scenario, row_idx] = obj.check_scenario(row);
-        
+
         if scenario == 1
             % stochastic output containing de-stablizer
             obj.scenario1(row, row_idx);
@@ -199,58 +201,61 @@ methods
             % stochastic output containing enhanced space
             obj.scenario3(row, row_idx);
         end
-     
+
     end
 
 
     %% Tableaue processing
     function scenario1(obj, row_measure, row_idx)
-        tableau = obj.tableau;        
+        tab = obj.tableau.tab;        
         % row_idx points to the row anticommuting with row_measure
         Ns = size(row_measure, 2) / 2;
-        
+
         % Find the first non-commuting row
-        row_append = tableau.tab(row_idx, :);
+        row_append = tab(row_idx, :);
         % Restore the tableau property for the rest non-commuting rows
         for i = [row_idx + 1: Ns*2, 1: Ns]
-            if Util.symplectic_inner_product(tableau.tab(i, :), row_measure, Ns)
-                tableau.tab(i, :) = Util.pauli_product(row_append, tableau.tab(i, :));
+            if Util.symplectic_inner_product(tab(i, :), row_measure, Ns)
+                tab(i, :) = Util.pauli_product(row_append, tab(i, :));
             end
         end
-        tableau.tab(row_idx, :) = row_measure;
-        tableau.tab(row_idx - Ns, :) = row_append;
+        tab(row_idx, :) = row_measure;
+        tab(row_idx - Ns, :) = row_append;
+
+        obj.tableau.tab = tab;
     end
-    
+
 
     function scenario3(obj, row_measure, row_idx)
-        tableau = obj.tableau;
-        stab_size = tableau.stab_size;
-        
+        tab = obj.tableau.tab;
+        stab_size = obj.tableau.stab_size;
+
         % row_idx points to the row anticommuting with row_measure
         Ns = size(row_measure, 2) / 2;
-    
+
         % Swap row_idx to Ns + stab_size + 1
-        tableau.tab([row_idx, Ns + stab_size + 1], :) = tableau.tab([Ns + stab_size + 1, row_idx], :);
+        tab([row_idx, Ns + stab_size + 1], :) = tab([Ns + stab_size + 1, row_idx], :);
         % Swap row_idx_bar accordingly
         row_idx_bar = homod(row_idx + Ns, 2*Ns);
         if row_idx_bar ~= Ns + stab_size + 1
             % Deduplicate the swap
-            tableau.tab([row_idx_bar, stab_size + 1], :) = tableau.tab([stab_size + 1, row_idx_bar], :);
+            tab([row_idx_bar, stab_size + 1], :) = tab([stab_size + 1, row_idx_bar], :);
         end
         row_idx = Ns + stab_size + 1;
-    
+        obj.tableau.tab = tab;
+
         obj.scenario1(row_measure, row_idx);
-        tableau.stab_size = stab_size + 1;
+        obj.tableau.stab_size = stab_size + 1;
     end
-    
-    
+
+
     function [scenario, row_idx] = check_scenario(obj, row_measure)
         Ns = obj.tableau.Ns;
         tableau = obj.tableau;
         stab_size = obj.tableau.stab_size;
-        
+
         Nrow = Ns - triexp(strcmp(obj.boundary, 'open'), 2, 0);
-    
+
         % scenario 1
         for i = Ns+1: Ns + stab_size
             if Util.symplectic_inner_product(tableau.tab(i, :), row_measure, Ns)
@@ -259,7 +264,7 @@ methods
                 return
             end
         end
-        
+
         % scenario 3
         for i = [Ns + stab_size + 1: Ns + Nrow, stab_size + 1: Nrow]
             if Util.symplectic_inner_product(tableau.tab(i, :), row_measure, Ns)
@@ -268,7 +273,7 @@ methods
                 return
             end
         end
-    
+
         % scenario 2
         scenario = 2;
         row_idx = 0;
