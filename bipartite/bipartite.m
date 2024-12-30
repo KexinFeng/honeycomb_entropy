@@ -35,7 +35,7 @@ folder = sprintf([script_path, '/data_%s/'], 'bipartite');
 triexpf(~exist(folder, 'dir'), {@mkdir, folder}, {});
 name = sprintf('cir_%d_T_%d_probs_%.2f_%.2f_%.2f_%.2f_%s_%s',...
     pars.cir, pars.T, pars.probs(1), pars.probs(2), pars.probs(3), ...
-    pars.probs(4), pars.boundary, pars.shift);
+    pars.probs(4), pars.boundary, num2str(pars.shift));
 
 fprintf('%s\n', name);                
 if ~ pars.update && exist([folder, name, '.mat'], 'file')
@@ -46,8 +46,16 @@ else
     
     %%
     simul = Simulator(varargin{:}, 'plotting', 0, 'verbose', false);
-    [es, ts] = simul.simulate();
     
+    % init to be zero flux sector
+    [es0, ts0] = simul.zero_flux_init();
+
+    % simulate
+    [es1, ts1] = simul.simulate();
+    
+    es = [es0, es1];
+    ts = [ts0, ts1];
+
     %% save
     pars_tmp = pars;
     clear pars
@@ -74,6 +82,7 @@ end
 
 %% measure
 sys_sizes = 0: ceil(pars.cir / pars.num): pars.cir;
+sys_sizes = unique(sort([sys_sizes, floor(pars.cir / 2)]));
 entropies = zeros(size(sys_sizes));
 for idx = 1: length(sys_sizes)
     tableau = simul.tableau.clone();
@@ -83,11 +92,15 @@ for idx = 1: length(sys_sizes)
     entropies(idx) = tableau.get_entropy();
 end
 
-output = {entropies / pars.cir};
+% Delta S
+idx = sys_sizes == pars.cir / 2;
+delta_S = entropies - entropies(idx);
+
+output = {delta_S / pars.cir, entropies / pars.cir};
 xs = sys_sizes / pars.cir;
 
 %% plotting
-if pars.plotting    
+if pars.plotting
     % title_str = {'title', 'sub'};    
     title_str = name;
     title_str = regexprep(title_str, '(?<=\D)_', '=');

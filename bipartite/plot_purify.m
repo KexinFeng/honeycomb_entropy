@@ -28,7 +28,7 @@ yticklabels(ytick_labels);
 xlabel('time', 'Interpreter', 'latex')
 ylabel('S/ln2', 'Interpreter', 'latex')
 
-ylim([yaxis_min, inf]);
+ylim([yaxis_min, log10(100)]);
 xlim([0, 150]);
 % axis([0, 125, 0, inf]);
 

@@ -69,6 +69,28 @@ methods
     end
     
 
+
+    function [es, ts] = zero_flux_init(obj)
+        cir = obj.cir;
+        wid = obj.wid;
+
+        for idx = 1: cir * wid - 1
+            [y, x] = homod(idx, wid);
+            row_plaq = obj.check_generator.plaq2row_commutive(x, y);
+            [scenario, row_idx] = obj.check_scenario(row_plaq);
+            assert(scenario == 3);
+            
+            obj.scenario3(row_plaq, row_idx);
+        end
+        
+        if obj.verbose
+            obj.tableau.render_table();
+        end
+
+        ts = 0;
+        es = obj.tableau.get_entropy();
+    end
+
     function [ys, xs] = simulate(obj)
         tic 
         filepath = fileparts(mfilename('fullpath'));
@@ -101,8 +123,8 @@ methods
         tableau = obj.tableau;
 
         %% main loop
-        for step = 1:T
-            for idx = 1:cir*wid %#ok<*PROP>
+        for step = 1: T
+            for idx = 1: cir*wid %#ok<*PROP>
                 [y, x] = homod(idx, wid);
                 % [tableau, stab_size, bond] = measure_rank(x, y, tableau, stab_size, pars);
                 bond = obj.measure_destab(x, y);

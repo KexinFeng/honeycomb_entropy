@@ -81,6 +81,44 @@ methods
 
 
     %% Utility
+    function row = plaq2row_commutive(obj, x, y)
+        cir = obj.cir;
+        wid = obj.wid;
+        Ns = obj.Ns;   
+        row = zeros(1, Ns*2);
+        % (x, y, 0)-Z-(x-1, y+1, 1)
+        % (x, y+1, 0)-X-(x-1, y, 1)
+        % (x-1, y+1, 0)-Y-(x, y, 1)
+
+        % Z
+        bin = [0; 1];
+        bin_arr = kron(bin, [1; 1]);
+        xs = [x, x-1];
+        ys = [y, y+1];
+        ab = [0, 1];
+        [xs, ys] = obj.identifier.comb(xs, ys);
+        row = obj.fill_row_entry(row, bin_arr, xs, ys, ab);
+       
+        % X
+        bin = [1; 0];
+        bin_arr = kron(bin, [1; 1]);
+        xs = [x,   x-1];
+        ys = [y+1, y];
+        ab = [0, 1]; 
+        [xs, ys] = obj.identifier.comb(xs, ys);
+        row = obj.fill_row_entry(row, bin_arr, xs, ys, ab);
+
+        % Y
+        bin = [1; 1];
+        bin_arr = kron(bin, [1; 1]);
+        xs = [x-1, x];
+        ys = [y+1, y];
+        ab = [0, 1];
+        [xs, ys] = obj.identifier.comb(xs, ys);
+        row = obj.fill_row_entry(row, bin_arr, xs, ys, ab);
+    end
+             
+
     function row = plaq2row(obj, x, y)
         cir = obj.cir;
         wid = obj.wid;
@@ -97,6 +135,7 @@ methods
         xs = [x, x];
         ys = [y, y];
         ab = [0, 1]; 
+        [xs, ys] = obj.identifier.comb(xs, ys);
         row = obj.fill_row_entry(row, bin_arr, xs, ys, ab);
 
         % Z
