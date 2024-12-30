@@ -19,8 +19,8 @@ else
     hb = errorbar(xs, ys, pars.err{1}, '*b-');
 end
 
-xlabel('l/L')
-ylabel('entropy')
+xlabel('l/L', 'Interpreter', 'latex')
+ylabel('S/Lln2', 'Interpreter', 'latex')
 
 legend(hb, pars.legend_str, 'AutoUpdate', 'off', 'Location', 'southeast');
 title(title_str);

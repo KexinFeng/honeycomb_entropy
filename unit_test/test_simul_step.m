@@ -4,7 +4,7 @@ addpath(genpath([filepath, '/../../utils']));
 rng(24);
 
 %%
-simul = Simulator('cir', 2, 'wid', 2);
+simul = Simulator('cir', 2, 'wid', 2, 'boundary', 'open');
 cir = simul.cir;
 wid = simul.wid;
 Ns = cir * wid *2;
@@ -72,6 +72,16 @@ assert(scenario == 3);
 simul.scenario3(row5, row_idx);
 assert(tableau.stab_size == 3);
 
+simul.tableau.render_table();
+simul.tableau.pair_tab_property();
+
+%% plaq
+row6 = check_generator.plaq2row(2, 1);
+[scenario, row_idx] = simul.check_scenario(row6);
+assert(scenario == 3);
+
+simul.scenario3(row6, row_idx);
+assert(tableau.stab_size == 4)
 
 simul.tableau.render_table();
 simul.tableau.pair_tab_property();

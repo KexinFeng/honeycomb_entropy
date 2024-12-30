@@ -5,7 +5,6 @@ function res = measure_simul_destab(varargin)
     % addpath([filepath, '/util.m']);
     
     rng(24);
-    clc;
     res = struct();
 
     %% period boundary

@@ -5,6 +5,7 @@ properties
     T
     plotting
     boundary
+    shift
     verbose
     %% internal 
     tableau
@@ -19,12 +20,15 @@ methods
         ip.addParameter('cir', 10);
         ip.addParameter('wid', 10);
         ip.addParameter('boundary', 'open');
+        ip.addParameter('shift', 0);
         ip.addParameter('T', 30);
         ip.addParameter('plotting', 1);
         ip.addParameter('verbose', false);
     
         ip.parse(varargin{:});
         pars = ip.Results;
+        
+        pars.wid = pars.cir;
 
         % Loop through the fields of pars and assign to properties
         fields = fieldnames(pars);
@@ -32,7 +36,13 @@ methods
             field = fields{i};
             obj.(field) = pars.(field);  % Dynamic field assignment
         end
-        
+
+        % Convert pars to a cell array of parameter-value pairs
+        values = struct2cell(pars);
+        fields2 = fieldnames(ip.Unmatched);
+        values2 = struct2cell(ip.Unmatched);
+        varargin = reshape([[fields; fields2], [values; values2]]', 1, []); 
+
         % Internal
         obj.tableau = Tableau(varargin{:});
         if obj.verbose
@@ -59,14 +69,12 @@ methods
     end
     
 
-    function simulate(obj)
+    function [ys, xs] = simulate(obj)
         tic 
         filepath = fileparts(mfilename('fullpath'));
         addpath(genpath([filepath, '/../utils']));
         % addpath([filepath, '/util.m']);
-        
-        % rng(24);
-        clc;
+
     
         %% prepare
         cir = obj.cir;
@@ -74,10 +82,18 @@ methods
         Ns = cir*wid*2;
         
         T = obj.T;
+
+        xs = zeros(1, T);
+        ys = zeros(1, T);
         
         if obj.plotting
+            prep_plots;
             figure
             hold on
+
+            ylim([0, inf]);
+            xlim([0, obj.T]);
+
             plot(0, Ns - 2*strcmp(obj.boundary, 'open'), '*', 'Color', 'b');
             pause(0.01);        
         end
@@ -97,7 +113,6 @@ methods
                 if obj.verbose
                     % Util.pair_tab_property(tab, cir, wid);
                     tableau.pair_tab_property();
-                    % print
                     fprintf('\nidx: %d\n', idx);
                     % tableau.render_table();
                 end
@@ -106,18 +121,22 @@ methods
             if obj.verbose
                 % Util.pair_tab_property(tab, cir, wid);
                 tableau.pair_tab_property()
-                fprintf('step=%d, r=%d\n\n', step, tableau.stab_size)
+                fprintf('step=%d, stab_size=%d\n\n', step, tableau.stab_size)
                 disp(' ')
             end
     
             % Plotting
             if obj.plotting
-                % plot(step, Ns - 2*strcmp(obj.boundary, 'open') - obj.tableau.stab_size, '*', 'Color', 'b');
                 plot(step, obj.tableau.get_entropy(), '*', 'Color', 'b');
                 pause(0.01);
             end
+
+            % Output
+            ys(step) = obj.tableau.get_entropy();
+            xs(step) = step;
         end
         
+        tableau.render_table()
         disp(['stab_size=', num2str(tableau.stab_size), ' total spin:', num2str(Ns - 2*strcmp(obj.boundary, 'open'))])
         disp(['entropy=', num2str(tableau.get_entropy())])
         
@@ -142,7 +161,7 @@ methods
         end
     
         if obj.verbose
-           fprintf('bond: %s\n', Util.row2pauli(row, cir, wid))
+           fprintf('check: %s\n', Util.row2pauli(row, cir, wid))
         end
     
         

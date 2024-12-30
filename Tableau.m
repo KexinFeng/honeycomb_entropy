@@ -42,6 +42,8 @@ methods
             tab = eye(Ns*2, Ns*2);
             if strcmp(obj.boundary, 'open')
                 tab([1, Ns+1, Ns-1, 2*Ns-1], :) = tab([Ns-1, 2*Ns-1, 1, Ns+1], :);
+                obj.frozen_qubits(1) = true;
+                obj.frozen_qubits(Ns+1) = true;
             end
             obj.tab = tab;
         end
@@ -53,9 +55,15 @@ methods
         tableau = Tableau(kv_list{:});
     end
 
+    function save(file_path)
+        kv_list = get_param(obj);
+        save(file_path, 'kv_list');
+    end
+
 
     function entropy = get_entropy(obj)
-        entropy = obj.Ns - 2*strcmp(obj.boundary, 'open') - obj.stab_size; % frozen qubits are discarded.
+        % entropy = obj.Ns - 2*strcmp(obj.boundary, 'open') - obj.stab_size; % frozen qubits are discarded.
+        entropy = obj.Ns - length(keys(obj.frozen_qubits)) - obj.stab_size; % frozen qubits are discarded.
     end
     
     %% Tracer
@@ -68,13 +76,18 @@ methods
         % search
         valid_stab_idx = Ns + (1: stab_size);
         for qubit = qubits
-            % Find all Xs on the qubit, process them and remove the first
+            if isKey(obj.frozen_qubits, qubit)
+                continue
+            end
+            obj.frozen_qubits(qubit) = true;
+
+            % Find all Xs on the qubit, transform them and remove the first
             row_idx_x = valid_stab_idx(obj.tab(valid_stab_idx, qubit) == 1);
             if ~isempty(row_idx_x)
                 obj.add_onto(row_idx_x(1), row_idx_x(2:end));
                 valid_stab_idx(valid_stab_idx == row_idx_x(1)) = [];
             end
-            % Find all Zs on the quit, process them and remove the first
+            % Find all Zs on the quit, transform them and remove the first
             row_idx_z = valid_stab_idx(obj.tab(valid_stab_idx, qubit + Ns) == 1);
             if ~isempty(row_idx_z)
                 obj.add_onto(row_idx_z(1), row_idx_z(2:end));
@@ -85,7 +98,7 @@ methods
         end
         assert(stab_size == length(valid_stab_idx));
         
-        % Re-org
+        % Re-org to remove the X and Z row from below
         src = Ns + (1: obj.stab_size);
         new_order = [valid_stab_idx, setdiff(src, valid_stab_idx)];
         obj.tab(new_order, :) = obj.tab(src, :);        

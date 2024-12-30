@@ -13,10 +13,7 @@ methods
     function obj = BipartiteEntropy(varargin)
         filepath = fileparts(mfilename('fullpath'));
         addpath([filepath, '/util.m']);
-        
-        rng(24);
-        clc;
-    
+         
         %% period boundary
         ip = inputParser;
         ip.KeepUnmatched = true;

@@ -39,9 +39,6 @@ methods
         filepath = fileparts(mfilename('fullpath'));
         addpath(genpath([filepath, '/../utils']));
         % addpath([filepath, '/util.m']);
-        
-        rng(24);
-        clc;
     
         %% prepare
         cir = obj.cir;
