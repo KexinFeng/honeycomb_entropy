@@ -10,7 +10,7 @@ function [output, xs] = bipartite(varargin)
     ip.KeepUnmatched = true;
     ip.PartialMatching = false;
     
-    ip.addParameter('cir', 14);
+    ip.addParameter('cir', 10);
     ip.addParameter('boundary', 'periodic');
     ip.addParameter('shift', 0);
     ip.addParameter('T', 150);
@@ -35,6 +35,7 @@ function [output, xs] = bipartite(varargin)
     %% measure bipartite
     sys_sizes = 0: ceil(pars.cir / pars.num): pars.cir;
     sys_sizes = unique(sort([sys_sizes, floor(pars.cir / 2)]));
+    
     entropies = zeros(size(sys_sizes));
     for idx = 1: length(sys_sizes)
         tableau = res.simul.tableau.clone();
@@ -43,9 +44,8 @@ function [output, xs] = bipartite(varargin)
         tableau.partial_trace(qubits_env);
         entropies(idx) = tableau.get_entropy();
     end
-    
     % Delta S
-    idx = sys_sizes == pars.cir / 2;
+    idx = (sys_sizes == pars.cir / 2);
     delta_S = entropies - entropies(idx);
     
     output = {delta_S / pars.cir, entropies / pars.cir};
@@ -106,7 +106,7 @@ function plot_bipartite(outputs, xs, title_str, save_str, varargin)
         print(gcf, '-depsc2', [str,'.eps']);
         eps2pdf([str,'.eps'], [str,'.pdf'], 1);
         delete([str,'.eps']);
-end
+    end
 end
 
 

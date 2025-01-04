@@ -6,7 +6,13 @@ classdef Util
             phase = sum(row1(1, 1:Ns).* row2(1, Ns+1:end) + row2(1, 1:Ns).* row1(1, Ns+1:end));
             phase = mod(phase, 2);
         end
-        
+
+        function phase = symplectic_inner_product_vec(rows1, row2, Ns)
+            phase = mod( ...
+                sum(rows1(:, 1: Ns) .* row2(1, Ns+1: end), 2) + ...
+                sum(row2(1, 1: Ns) .* rows1(:, Ns+1: end), 2), ...
+                2);
+        end
         
         function row = pauli_product(row1, row2)
             assert(all(size(row1) == size(row2)));

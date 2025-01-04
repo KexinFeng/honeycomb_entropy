@@ -1,0 +1,37 @@
+cirs = [18,  24,   30,    36,         42,         48, 54, 60];  
+% prim [~,   7245, 16478, 38709(10h), 90901(25h), ...];
+% vec  [141, 733,  ...];
+% vec2 
+
+%% primitive
+cir_18_T_150_probs_0.25_0.25_0.25_0.25_periodic
+file exists, loaded
+ord=1, Time elapsed: 2.290711 s
+stab_size=1145 total spin:1152
+entropy=7
+data saved:
+ /Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/bipartite/data_purify/cir_24_T_150_probs_0.25_0.25_0.25_0.25_periodic
+Time elapsed: 7189.982193 s
+ord=2, Time elapsed: 7245.166746 s
+stab_size=1790 total spin:1800
+entropy=10
+data saved:
+ /Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/bipartite/data_purify/cir_30_T_150_probs_0.25_0.25_0.25_0.25_periodic
+Time elapsed: 16478.557244 s
+ord=3, Time elapsed: 16703.653296 s
+stab_size=2578 total spin:2592
+entropy=14
+data saved:
+ /Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/bipartite/data_purify/cir_36_T_150_probs_0.25_0.25_0.25_0.25_periodic
+Time elapsed: 38709.404336 s
+ord=4, Time elapsed: 39263.886710 s
+stab_size=3509 total spin:3528
+entropy=19
+data saved:
+ /Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/bipartite/data_purify/cir_42_T_150_probs_0.25_0.25_0.25_0.25_periodic
+Time elapsed: 89740.599917 s
+ord=5, Time elapsed: 90901.003421 s
+
+%% vec2
+
+

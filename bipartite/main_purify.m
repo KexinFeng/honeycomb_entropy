@@ -1,4 +1,4 @@
-function main_bipartite(varargin)
+function main_purify(varargin)
     tictime = clock(); 
     script_path = fileparts(mfilename('fullpath'));
     addpath(genpath([script_path, '/../../utils']));
@@ -43,8 +43,10 @@ function main_bipartite(varargin)
     % cirs = [18, 24, 30, 36, 42, 48, 54, 60];
     
     % Trial
-    % cirs = [6, 10, 12, 14, 16, 18];
-    cirs = [18, 24, 30, 36, 42, 48, 54, 60];
+    cirs = [18, 24, 30, 36, 42, 48, 54, 60];  
+    cirs = [18, 24, 42, 48, 54, 60];
+    % cirs = [18];
+
     probs = [0.25, 0.25, 0.25, 0.25];
     probs_idx = 1: size(probs, 1);
 
@@ -53,15 +55,16 @@ function main_bipartite(varargin)
     overheads = zeros(size(cirs_x));
 
     %% 
-    launch_parpool('spare_numC', 0);
+    launch_parpool('spare_numC', 2);
     parfor ord = 1: length(cirs_x)
     % for ord = 1: length(cirs_x)
 
         tictime1 = clock();
-        [outputs, xs] = bipartite(varargin{:}, ...
+        purify(varargin{:}, ...
             'probs', probs(probs_idx_y(ord), :), ...
             'cir', cirs_x(ord), ...
-            'update', 0);
+            'update', 1, ...
+            'plotting', 0);
         
         overheads(ord) = etime(clock(), tictime1);
         fprintf('ord=%d, Time elapsed: %f s\n', ord, etime(clock(), tictime1));

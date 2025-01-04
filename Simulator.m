@@ -207,18 +207,46 @@ methods
 
     %% Tableaue processing
     function scenario1(obj, row_measure, row_idx)
-        tab = obj.tableau.tab;        
+        tab = obj.tableau.tab;
+        % tab2 = tab;
         % row_idx points to the row anticommuting with row_measure
         Ns = size(row_measure, 2) / 2;
 
         % Find the first non-commuting row
         row_append = tab(row_idx, :);
+        % % Restore the tableau property for the rest non-commuting rows
+        % for i = [row_idx + 1: Ns*2, 1: Ns] 
+        %     if Util.symplectic_inner_product(tab2(i, :), row_measure, Ns)
+        %         tab2(i, :) = Util.pauli_product(row_append, tab2(i, :));
+        %     end
+        % end
+
         % Restore the tableau property for the rest non-commuting rows
-        for i = [row_idx + 1: Ns*2, 1: Ns]
-            if Util.symplectic_inner_product(tab(i, :), row_measure, Ns)
-                tab(i, :) = Util.pauli_product(row_append, tab(i, :));
-            end
-        end
+        % % Define the range of indices
+        % indices = [row_idx + 1: Ns * 2, 1: Ns];
+        % % Extract the relevant rows
+        % rows_to_check = tab(indices, :);
+        % % Compute the symplectic inner product for all rows in one go
+        % phases = Util.symplectic_inner_product_vec(rows_to_check, row_measure, Ns);
+        % % Logical mask for rows where symplectic_inner_product equals 1
+        % rows_to_update = phases == 1;
+        % % Apply the pauli_product operation to the selected rows
+        % tab(indices(rows_to_update), :) = mod(row_append + rows_to_check(rows_to_update, :), 2);
+      
+        % Restore the tableau property for the rest non-commuting rows
+        % Define the range of indices
+        indices_bool = false(Ns*2, 1);
+        indices_bool([row_idx + 1: Ns * 2, 1: Ns]) = true;
+        % Compute the symplectic inner product for all rows in one go
+        phases = Util.symplectic_inner_product_vec(tab, row_measure, Ns);
+        % Logical mask for rows where symplectic_inner_product equals 1
+        rows_to_update = (phases == 1 & indices_bool);
+        % Apply the pauli_product operation to the selected rows
+        tab(rows_to_update, :) = mod(row_append + tab(rows_to_update, :), 2);
+        
+        % assert(all(tab == tab2, "all"))
+
+        % Assign the updated rows
         tab(row_idx, :) = row_measure;
         tab(row_idx - Ns, :) = row_append;
 
@@ -248,7 +276,7 @@ methods
         obj.tableau.stab_size = stab_size + 1;
     end
 
-
+    
     function [scenario, row_idx] = check_scenario(obj, row_measure)
         Ns = obj.tableau.Ns;
         tableau = obj.tableau;
@@ -256,23 +284,94 @@ methods
 
         Nrow = Ns - triexp(strcmp(obj.boundary, 'open'), 2, 0);
 
-        % scenario 1
-        for i = Ns+1: Ns + stab_size
-            if Util.symplectic_inner_product(tableau.tab(i, :), row_measure, Ns)
-                scenario = 1;
-                row_idx = i;
-                return
-            end
+        phases = Util.symplectic_inner_product_vec(tableau.tab, row_measure, Ns);
+        
+
+        % Scenario1
+        indices_bool_s1 = false(2*Ns, 1);
+        indices_bool_s1(Ns+1 : Ns+stab_size) = true;
+  
+        % Check if any row satisfies the condition
+        row_idx_s1 = find(phases == 1 & indices_bool_s1, 1);
+        if ~isempty(row_idx_s1)
+            scenario = 1;
+            row_idx = row_idx_s1;
+            return;
+        end
+        
+        % Scenario3
+        indices_bool_s3 = false(2*Ns, 1);
+        indices_bool_s3([Ns + stab_size + 1 : Ns + Nrow, stab_size + 1 : Nrow]) = true;
+       
+        % Check if any row satisfies the condition
+        check_bool = phases == 1 & indices_bool_s3;
+        check_bool([1: Ns, Ns + 1: 2*Ns]) = check_bool([Ns + 1: 2*Ns, 1: Ns]);
+        row_idx_s3 = find(check_bool, 1);
+        if ~isempty(row_idx_s3)
+            scenario = 3;
+            row_idx = mod(row_idx_s3 - 1 + Ns, 2*Ns) + 1;
+            return;
         end
 
-        % scenario 3
-        for i = [Ns + stab_size + 1: Ns + Nrow, stab_size + 1: Nrow]
-            if Util.symplectic_inner_product(tableau.tab(i, :), row_measure, Ns)
-                scenario = 3;
-                row_idx = i;
-                return
-            end
+        % scenario 2
+        scenario = 2;
+        row_idx = 0;
+    end
+
+
+    function [scenario, row_idx] = check_scenario_0(obj, row_measure)
+        Ns = obj.tableau.Ns;
+        tableau = obj.tableau;
+        stab_size = obj.tableau.stab_size;
+
+        Nrow = Ns - triexp(strcmp(obj.boundary, 'open'), 2, 0);
+
+        % Scenario1
+        rows_scenario1 = tableau.tab(Ns+1 : Ns+stab_size, :);
+        
+        % Compute the symplectic inner product for all rows in scenario 1
+        phases_scenario1 = Util.symplectic_inner_product_vec(rows_scenario1, row_measure, Ns);
+        
+        % Check if any row satisfies the condition
+        idx_scenario1 = find(phases_scenario1 == 1, 1);
+        if ~isempty(idx_scenario1)
+            scenario = 1;
+            row_idx = Ns + idx_scenario1;
+            return;
         end
+        
+        % Scenario3
+        indices_scenario3 = [Ns + stab_size + 1 : Ns + Nrow, stab_size + 1 : Nrow];
+        rows_scenario3 = tableau.tab(indices_scenario3, :);
+        
+        % Compute the symplectic inner product for all rows in scenario 3
+        phases_scenario3 = Util.symplectic_inner_product_vec(rows_scenario3, row_measure, Ns);
+        
+        % Check if any row satisfies the condition
+        idx_scenario3 = find(phases_scenario3 == 1, 1);
+        if ~isempty(idx_scenario3)
+            scenario = 3;
+            row_idx = indices_scenario3(idx_scenario3);
+            return;
+        end
+        
+        % % scenario 1
+        % for i = Ns+1: Ns + stab_size
+        %     if Util.symplectic_inner_product(tableau.tab(i, :), row_measure, Ns)
+        %         scenario = 1;
+        %         row_idx = i;
+        %         return
+        %     end
+        % end
+        % 
+        % % scenario 3
+        % for i = [Ns + stab_size + 1: Ns + Nrow, stab_size + 1: Nrow]
+        %     if Util.symplectic_inner_product(tableau.tab(i, :), row_measure, Ns)
+        %         scenario = 3;
+        %         row_idx = i;
+        %         return
+        %     end
+        % end
 
         % scenario 2
         scenario = 2;

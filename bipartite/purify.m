@@ -40,7 +40,14 @@ name = sprintf('cir_%d_T_%d_probs_%.2f_%.2f_%.2f_%.2f_%s',...
 
 fprintf('%s\n', name);                
 if ~ pars.update && exist([data_folder, name, '.mat'], 'file')
-    load([data_folder, name, '.mat']);
+    loaded = load([data_folder, name, '.mat']);
+    fields_loaded = fieldnames(loaded);
+    for i = 1:length(fields_loaded)
+        if strcmp(fields_loaded{i}, 'script_path')
+            continue
+        end
+        eval([fields_loaded{i} ' = loaded.(fields_loaded{i});']);
+    end
     disp('file exists, loaded');
 else
     disp('update or file not exist');
