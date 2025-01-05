@@ -52,8 +52,10 @@ methods
 
     function tableau = clone(obj)
         kv_list = get_param(obj);
-        tableau = Tableau(kv_list{:});
+        tableau = Tableau(kv_list{:}, ...
+            'frozen_qubits', containers.Map(obj.frozen_qubits.keys, obj.frozen_qubits.values));
     end
+    
 
     function save(file_path)
         kv_list = get_param(obj);
@@ -87,6 +89,7 @@ methods
                 obj.add_onto(row_idx_x(1), row_idx_x(2:end));
                 valid_stab_idx(valid_stab_idx == row_idx_x(1)) = [];
             end
+
             % Find all Zs on the quit, transform them and remove the first
             row_idx_z = valid_stab_idx(obj.tab(valid_stab_idx, qubit + Ns) == 1);
             if ~isempty(row_idx_z)

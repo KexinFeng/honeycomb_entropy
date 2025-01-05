@@ -20,6 +20,8 @@ function main_purify(varargin)
     ip.addParameter('plotting', 0);
     ip.addParameter('update', 0);
     ip.addParameter('init', 'flux_free');
+    % ip.addParameter('use_gpu', false);
+    
     
     ip.parse(varargin{:});
     pars = ip.Results;
@@ -43,9 +45,10 @@ function main_purify(varargin)
     % cirs = [18, 24, 30, 36, 42, 48, 54, 60];
     
     % Trial
-    cirs = [18, 24, 30, 36, 42, 48, 54, 60];  
-    cirs = [18, 24, 42, 48, 54, 60];
-    % cirs = [18];
+    cirs = [10, 12, 18, 24, 30, 36, 42, 48, 54, 60];  
+    cirs = [14, 24, 42, 48, 54, 60];
+    cirs = [18, 24, 30, 36, 42];
+    pars.T = 5;
 
     probs = [0.25, 0.25, 0.25, 0.25];
     probs_idx = 1: size(probs, 1);
@@ -64,10 +67,11 @@ function main_purify(varargin)
             'probs', probs(probs_idx_y(ord), :), ...
             'cir', cirs_x(ord), ...
             'update', 1, ...
-            'plotting', 0);
+            'plotting', 0, ...
+            'T', pars.T);
         
         overheads(ord) = etime(clock(), tictime1);
-        fprintf('ord=%d, Time elapsed: %f s\n', ord, etime(clock(), tictime1));
+        fprintf('cir=%d, Time elapsed: %f s\n', cirs_x(ord), etime(clock(), tictime1));
     end
     
     fprintf('Time elapsed: %f s\n', etime(clock(), tictime));

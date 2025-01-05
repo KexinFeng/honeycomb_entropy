@@ -91,6 +91,7 @@ methods
         es = obj.tableau.get_entropy();
     end
 
+    
     function [ys, xs] = simulate(obj)
         tic 
         filepath = fileparts(mfilename('fullpath'));
@@ -123,6 +124,10 @@ methods
         tableau = obj.tableau;
 
         %% main loop
+        % addpath('/Users/kx/Desktop/forked/MatlabProgressBar/');
+        % pb = ProgressBar(T, 'IsParallel', false, ...
+        %     'Title', sprintf('%d processing...', obj.cir));
+
         for step = 1: T
             for idx = 1: cir*wid %#ok<*PROP>
                 [y, x] = homod(idx, wid);
@@ -156,8 +161,16 @@ methods
             % Output
             ys(step) = obj.tableau.get_entropy();
             xs(step) = step;
+            
+            % Progress
+            % pb([], [], []);
+            % updateParallel([], pwd);
+            fprintf('%d / %d progress %d\n', step, T, obj.cir);
         end
-        
+
+        % pb.release();
+        % close(h);
+
         if obj.verbose
             tableau.render_table()
         end
@@ -214,14 +227,15 @@ methods
 
         % Find the first non-commuting row
         row_append = tab(row_idx, :);
+
         % % Restore the tableau property for the rest non-commuting rows
         % for i = [row_idx + 1: Ns*2, 1: Ns] 
-        %     if Util.symplectic_inner_product(tab2(i, :), row_measure, Ns)
-        %         tab2(i, :) = Util.pauli_product(row_append, tab2(i, :));
+        %     if Util.symplectic_inner_product(tab(i, :), row_measure, Ns)
+        %         tab(i, :) = Util.pauli_product(row_append, tab(i, :));
         %     end
         % end
 
-        % Restore the tableau property for the rest non-commuting rows
+        % % Restore the tableau property for the rest non-commuting rows
         % % Define the range of indices
         % indices = [row_idx + 1: Ns * 2, 1: Ns];
         % % Extract the relevant rows
@@ -291,7 +305,7 @@ methods
         indices_bool_s1 = false(2*Ns, 1);
         indices_bool_s1(Ns+1 : Ns+stab_size) = true;
   
-        % Check if any row satisfies the condition
+        % check if any row satisfies the condition
         row_idx_s1 = find(phases == 1 & indices_bool_s1, 1);
         if ~isempty(row_idx_s1)
             scenario = 1;
@@ -303,12 +317,14 @@ methods
         indices_bool_s3 = false(2*Ns, 1);
         indices_bool_s3([Ns + stab_size + 1 : Ns + Nrow, stab_size + 1 : Nrow]) = true;
        
-        % Check if any row satisfies the condition
+        % check if any row satisfies the condition
         check_bool = phases == 1 & indices_bool_s3;
+        % flip the two sections of indices
         check_bool([1: Ns, Ns + 1: 2*Ns]) = check_bool([Ns + 1: 2*Ns, 1: Ns]);
         row_idx_s3 = find(check_bool, 1);
         if ~isempty(row_idx_s3)
             scenario = 3;
+            % restore the index by computing its conjugate
             row_idx = mod(row_idx_s3 - 1 + Ns, 2*Ns) + 1;
             return;
         end
@@ -328,10 +344,10 @@ methods
 
         % Scenario1
         rows_scenario1 = tableau.tab(Ns+1 : Ns+stab_size, :);
-        
+
         % Compute the symplectic inner product for all rows in scenario 1
         phases_scenario1 = Util.symplectic_inner_product_vec(rows_scenario1, row_measure, Ns);
-        
+
         % Check if any row satisfies the condition
         idx_scenario1 = find(phases_scenario1 == 1, 1);
         if ~isempty(idx_scenario1)
@@ -339,14 +355,14 @@ methods
             row_idx = Ns + idx_scenario1;
             return;
         end
-        
+
         % Scenario3
         indices_scenario3 = [Ns + stab_size + 1 : Ns + Nrow, stab_size + 1 : Nrow];
         rows_scenario3 = tableau.tab(indices_scenario3, :);
-        
+
         % Compute the symplectic inner product for all rows in scenario 3
         phases_scenario3 = Util.symplectic_inner_product_vec(rows_scenario3, row_measure, Ns);
-        
+
         % Check if any row satisfies the condition
         idx_scenario3 = find(phases_scenario3 == 1, 1);
         if ~isempty(idx_scenario3)
