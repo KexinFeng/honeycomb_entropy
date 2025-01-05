@@ -91,7 +91,7 @@ methods
         es = obj.tableau.get_entropy();
     end
 
-    
+
     function [ys, xs] = simulate(obj)
         tic 
         filepath = fileparts(mfilename('fullpath'));
@@ -201,6 +201,9 @@ methods
            fprintf('check: %s\n', Util.row2pauli(row, cir, wid))
         end
 
+        if canUseGPU()
+            row = gpuArray(row);
+        end
 
         [scenario, row_idx] = obj.check_scenario(row);
 
@@ -303,6 +306,9 @@ methods
 
         % Scenario1
         indices_bool_s1 = false(2*Ns, 1);
+        if canUseGPU()
+            indices_bool_s1 = gpuArray(indices_bool_s1);
+        end
         indices_bool_s1(Ns+1 : Ns+stab_size) = true;
   
         % check if any row satisfies the condition
@@ -315,6 +321,9 @@ methods
         
         % Scenario3
         indices_bool_s3 = false(2*Ns, 1);
+        if canUseGPU()
+            indices_bool_s3 = gpuArray(indices_bool_s3);
+        end
         indices_bool_s3([Ns + stab_size + 1 : Ns + Nrow, stab_size + 1 : Nrow]) = true;
        
         % check if any row satisfies the condition
@@ -334,7 +343,7 @@ methods
         row_idx = 0;
     end
 
-
+    
     function [scenario, row_idx] = check_scenario_0(obj, row_measure)
         Ns = obj.tableau.Ns;
         tableau = obj.tableau;

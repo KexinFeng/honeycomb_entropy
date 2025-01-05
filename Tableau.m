@@ -40,6 +40,9 @@ methods
         if isempty(obj.tab)
             Ns = obj.Ns;
             tab = eye(Ns*2, Ns*2);
+            if canUseGPU()
+                tab = gpuArray(tab);
+            end
             if strcmp(obj.boundary, 'open')
                 tab([1, Ns+1, Ns-1, 2*Ns-1], :) = tab([Ns-1, 2*Ns-1, 1, Ns+1], :);
                 obj.frozen_qubits(1) = true;

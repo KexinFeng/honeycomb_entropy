@@ -48,7 +48,7 @@ function main_purify(varargin)
     cirs = [10, 12, 18, 24, 30, 36, 42, 48, 54, 60];  
     cirs = [14, 24, 42, 48, 54, 60];
     cirs = [18, 24, 30, 36, 42];
-    pars.T = 5;
+    % pars.T = 5;
 
     probs = [0.25, 0.25, 0.25, 0.25];
     probs_idx = 1: size(probs, 1);
