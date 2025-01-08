@@ -19,4 +19,4 @@
 *.zip
 *.exe
 
-submodules/utils
+/submodules
