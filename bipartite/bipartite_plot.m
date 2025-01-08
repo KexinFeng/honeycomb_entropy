@@ -47,8 +47,30 @@ function bipartite_plot(varargin)
 
         pause(0.001);
     end
+
+
+%% save
+name = sprintf('T_%d_probs_%.2f_%.2f_%.2f_%.2f_%s',...
+pars.T, probs(1), probs(2), probs(3), ...
+probs(4), pars.boundary);
+
+fprintf('%s\n', name);                
+data_folder = sprintf([script_path, '/data_%s/'], mfilename);
+triexpf(~exist(data_folder, 'dir'), {@mkdir, data_folder}, {});
+if ~ pars.update && exist([data_folder, name, '.mat'], 'file')
+    loaded = load([data_folder, name, '.mat']);
+    fields_loaded = fieldnames(loaded);
+    for i = 1:length(fields_loaded)
+        if strcmp(fields_loaded{i}, 'script_path')
+            continue
+        end
+        eval([fields_loaded{i} ' = loaded.(fields_loaded{i});']);
+    end
+    disp('file exists, loaded');
+else
+    disp('update or file not exist');
     
-    
+
     %% Plotting
     colors = linspecer(length(cirs), 'sequential');
     % colors = cbrewer('qual', 'Paired', 6);
@@ -92,28 +114,42 @@ function bipartite_plot(varargin)
 
         pause(0.001);
     end
-        
-    
-    %% Plot setting
-    grid off
-    box on
-    
-    lgd = legend(hands, legends, 'Location', 'south');
-    % legend('boxoff');
-    set(lgd, 'AutoUpdate', 1);
-    
-    dbstop = 1;
 
-    %% Plot saving
-    save_str = [script_path, ...
-        sprintf('/figures_bipartite_plot/probs_%.2f_%.2f_%.2f_%.2f',...
-        probs(1), probs(2), probs(3), probs(4))];
-    if ~isempty(save_str)
-        str = save_str;
-        print(gcf, '-depsc2', [str,'.eps']);
-        eps2pdf([str,'.eps'], [str,'.pdf'], 1);
-        delete([str,'.eps']);
-    end
+
+    %% save
+    pars_tmp = pars;
+    clear pars
+    save([data_folder, name, '.mat']);
+    fprintf('data saved:\n %s\n', [data_folder, name]);
+    fprintf('Time elapsed: %f s\n',  etime(clock(), tictime));
+    pars = pars_tmp;
+end        
+
+
+title_str = name;
+title_str = regexprep(title_str, '(?<=\D)_', '=');
+title_str = regexprep(title_str, '(?<=\d)_', ' ');
+
+
+%% Plot setting
+grid off
+box on
+
+title(title_str)
+
+lgd = legend(hands, legends, 'Location', 'south');
+% legend('boxoff');
+set(lgd, 'AutoUpdate', 1);
+
+dbstop = 1;
+
+%% Plot saving
+save_str = [script_path, ...
+    sprintf('/figures_bipartite_plot/probs_%.2f_%.2f_%.2f_%.2f',...
+    probs(1), probs(2), probs(3), probs(4))];
+
+savepdf(save_str);
+
 end
 
 % 

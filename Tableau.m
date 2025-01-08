@@ -55,8 +55,14 @@ methods
 
     function tableau = clone(obj)
         kv_list = get_param(obj);
-        tableau = Tableau(kv_list{:}, ...
-            'frozen_qubits', containers.Map(obj.frozen_qubits.keys, obj.frozen_qubits.values));
+
+        if isempty(obj.frozen_qubits)
+            clonedMap = containers.Map(); 
+        else
+            clonedMap = containers.Map(keys(obj.frozen_qubits), values(obj.frozen_qubits));
+        end
+
+        tableau = Tableau(kv_list{:}, 'frozen_qubits', clonedMap);
     end
     
 
