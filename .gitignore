@@ -14,3 +14,7 @@
 
 *.DS_Store
 *.asv
+.idea
+
+*.zip
+*.exe
