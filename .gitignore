@@ -18,3 +18,5 @@
 
 *.zip
 *.exe
+
+submodules/utils
