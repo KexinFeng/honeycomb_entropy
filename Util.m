@@ -2,6 +2,7 @@ classdef Util
     methods(Static)
         %% utility functions
         function phase = symplectic_inner_product(row1, row2, Ns)
+            % Yields 0 if generators commute, 1 if they anticommute
             assert(size(row1, 2) == size(row2, 2) && size(row2, 2) == Ns*2);
             phase = sum(row1(1, 1:Ns).* row2(1, Ns+1:end) + row2(1, 1:Ns).* row1(1, Ns+1:end));
             phase = mod(phase, 2);
@@ -15,6 +16,7 @@ classdef Util
         end
         
         function row = pauli_product(row1, row2)
+            % Used as part of the "rowsum(h,i)" command specified in Aaronson
             assert(all(size(row1) == size(row2)));
             row = mod(row1 + row2, 2);
         end

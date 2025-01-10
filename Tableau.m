@@ -36,6 +36,7 @@ methods
         if isempty(obj.frozen_qubits)
             obj.frozen_qubits = containers.Map('KeyType', 'int64', 'ValueType', 'any');
         end
+<<<<<<< Updated upstream
         
         if isempty(obj.tab)
             Ns = obj.Ns;
@@ -44,6 +45,7 @@ methods
                 tab = gpuArray(tab);
             end
             if strcmp(obj.boundary, 'open')
+            % Distinction relies on stab_size, if =N_s pure, if =0 mixed.
                 tab([1, Ns+1, Ns-1, 2*Ns-1], :) = tab([Ns-1, 2*Ns-1, 1, Ns+1], :);
                 obj.frozen_qubits(1) = true;
                 obj.frozen_qubits(Ns+1) = true;
@@ -79,27 +81,42 @@ methods
     
     %% Tracer
     function partial_trace(obj, qubits)
+<<<<<<< Updated upstream
         % qubits: [1, |qubits|]
         
+=======
+        % Performs trace over sites with indices given in [qubits]
+>>>>>>> Stashed changes
         Ns = obj.Ns;
         stab_size = obj.stab_size;
 
         % search
-        valid_stab_idx = Ns + (1: stab_size);
+        valid_stab_idx = Ns + (1: stab_size); %array of all stab row indices
         for qubit = qubits
+<<<<<<< Updated upstream
             if isKey(obj.frozen_qubits, qubit)
                 continue
             end
             obj.frozen_qubits(qubit) = true;
 
             % Find all Xs on the qubit, transform them and remove the first
+=======
+            % collect which qubit indices have an x gate
+>>>>>>> Stashed changes
             row_idx_x = valid_stab_idx(obj.tab(valid_stab_idx, qubit) == 1);
             if ~isempty(row_idx_x)
+                % If gate from current qubit is present in another row,
+                % removes that influence
                 obj.add_onto(row_idx_x(1), row_idx_x(2:end));
+                % Removes the traced qubit from list
                 valid_stab_idx(valid_stab_idx == row_idx_x(1)) = [];
             end
+<<<<<<< Updated upstream
 
             % Find all Zs on the quit, transform them and remove the first
+=======
+            % collect which qubit indices have a z gate
+>>>>>>> Stashed changes
             row_idx_z = valid_stab_idx(obj.tab(valid_stab_idx, qubit + Ns) == 1);
             if ~isempty(row_idx_z)
                 obj.add_onto(row_idx_z(1), row_idx_z(2:end));
@@ -110,9 +127,17 @@ methods
         end
         assert(stab_size == length(valid_stab_idx));
         
+<<<<<<< Updated upstream
         % Re-org to remove the X and Z row from below
+=======
+        % Reorder tableau with only the untraced stabilizers beginning at
+        % row N_s+1. Traced columns move to the end in both stab and
+        % destabilizer sections, essentially, not totally clear on
+        % intented effect here
+>>>>>>> Stashed changes
         src = Ns + (1: obj.stab_size);
         new_order = [valid_stab_idx, setdiff(src, valid_stab_idx)];
+        disp(new_order);
         obj.tab(new_order, :) = obj.tab(src, :);        
         obj.tab(new_order - Ns, :) = obj.tab(src - Ns, :);
 
@@ -121,6 +146,8 @@ methods
 
 
     function add_onto(obj, row_src, row_tgt)
+        % Adds row_src onto row_tgt and then adds the corresponding
+        % destabilizers together, plus one, onto the row_src complement
         if isempty(row_tgt)
             return
         end

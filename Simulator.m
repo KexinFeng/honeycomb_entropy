@@ -305,7 +305,11 @@ methods
         Ns = obj.tableau.Ns;
         tableau = obj.tableau;
         stab_size = obj.tableau.stab_size;
+<<<<<<< Updated upstream
 
+=======
+        %What is triexp?
+>>>>>>> Stashed changes
         Nrow = Ns - triexp(strcmp(obj.boundary, 'open'), 2, 0);
 
         phases = Util.symplectic_inner_product_vec(tableau.tab, row_measure, Ns);

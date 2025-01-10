@@ -38,6 +38,8 @@ methods
         
     %% Random generation
     function [row, bond] = generate_bond(obj, x, y)
+        % x and y specify grid location of the qubit
+        % bond specifies x, y, or z measurement
         cir = obj.cir;
         wid = obj.wid;
         
@@ -45,6 +47,8 @@ methods
         if strcmp(obj.boundary, "periodic")
             bond = randi([1, 3]); % 1:z, 2:x, 3:y
         elseif strcmp(obj.boundary, 'open')
+            % Filters out sites at the outer corners or top edges and
+            % returns no results for bonds which don't exist
             if x==1 && y==1 
                 bond = randsample([1, 3], 1);
             elseif x == cir && y == wid
@@ -78,6 +82,7 @@ methods
         % (x, y, 0)-X-(x, y , 1)
         % (x, y+1, 0)-Z-(x, y, 1)
         % (x+1, y, 0)-Y-(x, y, 1)
+        % bond type is written as a binary array
         bin = dec2bin(bond, 2);
         bin_arr = kron(str2num(bin(:)), [1; 1]);
         
@@ -85,6 +90,9 @@ methods
         ys = [y+(bond == 1), y];
         ab = [0, 1];
         [xs, ys] = obj.identifier.comb(xs, ys);
+        % What is this function? I assume it's just doing modulo cir/wid?
+        % Y and Z bonds (on pbc) wrap around. Open bc, just two copies of
+        % the same
         row = obj.fill_row_entry(row, bin_arr, xs, ys, ab);
         % bond_names = ['Z', 'X', 'Y'];
         % pauli = Util.row2pauli(row, cir, wid);
@@ -113,6 +121,9 @@ methods
         % bin_arr represents a bilinear pauli operator @ (xs, ys, ab)
         idx = obj.pos(xs, ys, ab);
         idx = [idx, idx + obj.Ns];
+        % Site index: x = 1~cir; y = 1~wid; ab = 0,1
+        % B lattice position numbers run from N_s+1 to 2N_s
+        % Fills in nonzero row values
         row(idx) = reshape(bin_arr, size(idx)); 
     end
 
