@@ -73,9 +73,10 @@ else
     %% save
     pars_tmp = pars;
     clear pars
-    save([data_folder, name, '.mat']);
     fprintf('data saved:\n %s\n', [data_folder, name]);
     fprintf('Time elapsed: %f s\n',  etime(clock(), tictime));
+    overhead = etime(clock(), tictime);
+    save([data_folder, name, '.mat']);
     pars = pars_tmp;
 end
 

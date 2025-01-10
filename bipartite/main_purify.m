@@ -13,7 +13,7 @@ function main_purify(varargin)
     % ip.addParameter('cir', 10);
     ip.addParameter('boundary', 'periodic');
     ip.addParameter('shift', 0);
-    ip.addParameter('T', 150);
+    ip.addParameter('T', 300);
     ip.addParameter('verbose', false);
     % ip.addParameter('probs', [0.25, 0.25, 0.25, 0.25]);
     ip.addParameter('num', 10);
@@ -50,7 +50,8 @@ function main_purify(varargin)
     cirs = [18, 24, 30, 36, 42];
     
     cirs = [18, 24, 48, 54, 60];
-    % pars.T = 5;
+    cirs = [36, 42, 48, 54, 60];
+    % pars.T = 20;
 
     probs = [0.25, 0.25, 0.25, 0.25];
     probs_idx = 1: size(probs, 1);
@@ -60,15 +61,15 @@ function main_purify(varargin)
     overheads = zeros(size(cirs_x));
 
     %% 
-    launch_parpool('spare_numC', 2);
-    parfor ord = 1: length(cirs_x)
-    % for ord = 1: length(cirs_x)
+    %launch_parpool('spare_numC', 0);
+    %parfor ord = 1: length(cirs_x)
+    for ord = 1: length(cirs_x)
 
         tictime1 = clock();
         purify(varargin{:}, ...
             'probs', probs(probs_idx_y(ord), :), ...
             'cir', cirs_x(ord), ...
-            'update', 1, ...
+            'update', pars.update, ...
             'plotting', 0, ...
             'T', pars.T);
         

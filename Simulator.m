@@ -279,10 +279,12 @@ methods
         Ns = size(row_measure, 2) / 2;
 
         % Swap row_idx to Ns + stab_size + 1
-        tab([row_idx, Ns + stab_size + 1], :) = tab([Ns + stab_size + 1, row_idx], :);
+        if row_idx ~= Ns + stab_size + 1
+            tab([row_idx, Ns + stab_size + 1], :) = tab([Ns + stab_size + 1, row_idx], :);
+        end
         % Swap row_idx_bar accordingly
         row_idx_bar = homod(row_idx + Ns, 2*Ns);
-        if row_idx_bar ~= Ns + stab_size + 1
+        if row_idx_bar ~= Ns + stab_size + 1 && row_idx_bar ~= stab_size + 1
             % Deduplicate the swap
             tab([row_idx_bar, stab_size + 1], :) = tab([stab_size + 1, row_idx_bar], :);
         end
