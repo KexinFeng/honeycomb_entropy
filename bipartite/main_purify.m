@@ -18,7 +18,7 @@ function main_purify(varargin)
     % ip.addParameter('probs', [0.25, 0.25, 0.25, 0.25]);
     ip.addParameter('num', 10);
     ip.addParameter('plotting', 0);
-    ip.addParameter('update', 0);
+    ip.addParameter('update', 1);
     ip.addParameter('init', 'flux_free');
     % ip.addParameter('use_gpu', false);
     
@@ -51,7 +51,8 @@ function main_purify(varargin)
     
     cirs = [18, 24, 48, 54, 60];
     cirs = [36, 42, 48, 54, 60];
-    % pars.T = 20;
+    cirs = [14];
+    pars.T = 20;
 
     probs = [0.25, 0.25, 0.25, 0.25];
     probs_idx = 1: size(probs, 1);

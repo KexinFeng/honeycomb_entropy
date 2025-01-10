@@ -77,6 +77,10 @@ methods
         for idx = 1: cir * wid - 1
             [y, x] = homod(idx, wid);
             row_plaq = obj.check_generator.plaq2row_commutive(x, y);
+            row_plaq = uint16(row_plaq);
+            if canUseGPU()
+                row_plaq = gpuArray(row_plaq);
+            end
             [scenario, row_idx] = obj.check_scenario(row_plaq);
             assert(scenario == 3);
             
@@ -201,6 +205,7 @@ methods
            fprintf('check: %s\n', Util.row2pauli(row, cir, wid))
         end
 
+        row = uint16(row);
         if canUseGPU()
             row = gpuArray(row);
         end

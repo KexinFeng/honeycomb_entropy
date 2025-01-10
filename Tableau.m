@@ -39,7 +39,7 @@ methods
         
         if isempty(obj.tab)
             Ns = obj.Ns;
-            tab = eye(Ns*2, Ns*2);
+            tab = uint16(eye(Ns*2, Ns*2));
             if canUseGPU()
                 tab = gpuArray(tab);
             end
