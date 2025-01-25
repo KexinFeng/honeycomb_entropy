@@ -41,7 +41,7 @@ methods
         values = struct2cell(pars);
         fields2 = fieldnames(ip.Unmatched);
         values2 = struct2cell(ip.Unmatched);
-        varargin = reshape([[fields; fields2], [values; values2]]', 1, []); 
+        varargin = reshape([[fields; fields2], [values; values2]]', 1, []);
 
         % Internal
         obj.tableau = Tableau(varargin{:});
@@ -134,6 +134,8 @@ methods
 
         for step = 1: T
             for idx = 1: cir*wid %#ok<*PROP>
+                %idx comes from the A sublattice only
+                %Find coordinates of the qubit on the lattice
                 [y, x] = homod(idx, wid);
                 % [tableau, stab_size, bond] = measure_rank(x, y, tableau, stab_size, pars);
                 bond = obj.measure_destab(x, y);
@@ -211,7 +213,6 @@ methods
         end
 
         [scenario, row_idx] = obj.check_scenario(row);
-
         if scenario == 1
             % stochastic output containing de-stablizer
             obj.scenario1(row, row_idx);
@@ -233,7 +234,8 @@ methods
         % row_idx points to the row anticommuting with row_measure
         Ns = size(row_measure, 2) / 2;
 
-        % Find the first non-commuting row
+        % Find the first non-commuting row in the stabilizer (assert(
+        % row_idx>Ns), maybe?)
         row_append = tab(row_idx, :);
 
         % % Restore the tableau property for the rest non-commuting rows
@@ -258,12 +260,13 @@ methods
         % Restore the tableau property for the rest non-commuting rows
         % Define the range of indices
         indices_bool = false(Ns*2, 1);
-        indices_bool([row_idx + 1: Ns * 2, 1: Ns]) = true;
+        indices_bool([(row_idx+1):(Ns*2), 1:Ns]) = true;
         % Compute the symplectic inner product for all rows in one go
         phases = Util.symplectic_inner_product_vec(tab, row_measure, Ns);
         % Logical mask for rows where symplectic_inner_product equals 1
         rows_to_update = (phases == 1 & indices_bool);
-        % Apply the pauli_product operation to the selected rows
+        % Apply the pauli_product operation to the selected rows, rendering
+        % them commuting
         tab(rows_to_update, :) = mod(row_append + tab(rows_to_update, :), 2);
         
         % assert(all(tab == tab2, "all"))
@@ -283,11 +286,11 @@ methods
         % row_idx points to the row anticommuting with row_measure
         Ns = size(row_measure, 2) / 2;
 
-        % Swap row_idx to Ns + stab_size + 1
+        % Swap row_idx to Ns + stab_size + 1, to make it part of stabilizer
         if row_idx ~= Ns + stab_size + 1
             tab([row_idx, Ns + stab_size + 1], :) = tab([Ns + stab_size + 1, row_idx], :);
         end
-        % Swap row_idx_bar accordingly
+        % Swap row_idx_bar accordingly, to add it to the destabilizer
         row_idx_bar = homod(row_idx + Ns, 2*Ns);
         if row_idx_bar ~= Ns + stab_size + 1 && row_idx_bar ~= stab_size + 1
             % Deduplicate the swap
@@ -305,20 +308,22 @@ methods
         Ns = obj.tableau.Ns;
         tableau = obj.tableau;
         stab_size = obj.tableau.stab_size;
-        %What is triexp?
+        %Triexp(#1,#2,#3) = #2*#1 + #3*(1-#1), a shortened if/else
+        %This gives Ns-2 if there are open boundaries, Ns otherwise
         Nrow = Ns - triexp(strcmp(obj.boundary, 'open'), 2, 0);
-
-        phases = Util.symplectic_inner_product_vec(tableau.tab, row_measure, Ns);
         
+        % Checklist of which rows anticommute with row_measure
+        phases = Util.symplectic_inner_product_vec(tableau.tab, row_measure, Ns);
 
-        % Scenario1
+        % Scenario1: Not an eigenstate of the measurement operator
         indices_bool_s1 = false(2*Ns, 1);
         if canUseGPU()
             indices_bool_s1 = gpuArray(indices_bool_s1);
         end
+        % Generates checklist of stabilizers
         indices_bool_s1(Ns+1 : Ns+stab_size) = true;
   
-        % check if any row satisfies the condition
+        % check if any rows in stabilizer anticommute, take first one
         row_idx_s1 = find(phases == 1 & indices_bool_s1, 1);
         if ~isempty(row_idx_s1)
             scenario = 1;
@@ -326,17 +331,21 @@ methods
             return;
         end
         
-        % Scenario3
+        % Scenario3: Is in a mixed state of the measurement's 2 eigenstates
         indices_bool_s3 = false(2*Ns, 1);
         if canUseGPU()
             indices_bool_s3 = gpuArray(indices_bool_s3);
         end
+        % Checklist of non-(stabilizer or destabilizer)s
         indices_bool_s3([Ns + stab_size + 1 : Ns + Nrow, stab_size + 1 : Nrow]) = true;
-       
-        % check if any row satisfies the condition
+        
+        % Returns true when row i anticommutes with the measurement and is
+        % neither a stabilizer nor destabilizer
         check_bool = phases == 1 & indices_bool_s3;
-        % flip the two sections of indices
-        check_bool([1: Ns, Ns + 1: 2*Ns]) = check_bool([Ns + 1: 2*Ns, 1: Ns]);
+        % flip the two sections of indices to specifically find the first
+        % stabilizer section row which satisfies the condition
+        % Why is this preferable?
+        check_bool([1:Ns, (Ns+1):2*Ns]) = check_bool([(Ns + 1):2*Ns,1:Ns]);
         row_idx_s3 = find(check_bool, 1);
         if ~isempty(row_idx_s3)
             scenario = 3;
@@ -345,13 +354,14 @@ methods
             return;
         end
 
-        % scenario 2
+        % scenario 2: Already in a +1 eigenstate of the measurement
         scenario = 2;
         row_idx = 0;
     end
 
     
     function [scenario, row_idx] = check_scenario_0(obj, row_measure)
+        % Seemingly deprecated
         Ns = obj.tableau.Ns;
         tableau = obj.tableau;
         stab_size = obj.tableau.stab_size;

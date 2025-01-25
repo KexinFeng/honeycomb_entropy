@@ -10,8 +10,8 @@ classdef Util
 
         function phase = symplectic_inner_product_vec(rows1, row2, Ns)
             phase = mod( ...
-                sum(rows1(:, 1: Ns) .* row2(1, Ns+1: end), 2) + ...
-                sum(row2(1, 1: Ns) .* rows1(:, Ns+1: end), 2), ...
+                sum(uint16(rows1(:, 1: Ns)) .* uint16(row2(1, Ns+1: end)), 2) + ...
+                sum(uint16(row2(1, 1: Ns)) .* uint16(rows1(:, Ns+1: end)), 2), ...
                 2);
         end
         
@@ -24,7 +24,7 @@ classdef Util
         
         function render_table(tab, r, cir, wid)
             for i = 1:r
-                fprintf("%s\n", Util.row2pauli(tab(i, :), cir, wid));
+                fprintf("%s\n", Util.row2pauli(tab(i,:),cir,wid));
             end
         end
 
@@ -57,11 +57,14 @@ classdef Util
             str_arr = {};
             for i = 1:Ns*2
                 for j = i+1:Ns*2
+                    % In destab formalism, rows i and j commute unless
+                    % j==i+Ns
                     if j - Ns == i
                         res = 1 == Util.symplectic_inner_product(tab(i, :), tab(j, :), Ns);
                     else
                         res = 0 == Util.symplectic_inner_product(tab(i, :), tab(j, :), Ns);
                     end
+                    % Lists out any rows which violate this rule
                     if ~res
                         str_arr = [str_arr, [i, j]];
                     end
@@ -77,6 +80,8 @@ classdef Util
 
         
         function b = pair_commute(tab, r, cir, wid)
+            % This essentially does the same as pair_tab_property with less
+            % specificity and verbosity
             b = true;
             for i = 1:r
                 for j = i+1:r
@@ -90,6 +95,8 @@ classdef Util
         
 
         function pauli_strs = row2pauli(rows, cir, wid)
+            % Converts rows to list of Pauli matrices which stabilize the
+            % state
             if isscalar(size(rows))
                 rows = reshape(rows, 1, length(rows));
             end
@@ -102,7 +109,7 @@ classdef Util
                 strArray = [];
                 assert(size(row, 2) == Ns * 2);
                 for ind = 1: Ns
-                    bin = sum(row([ind, ind+Ns]).*[2, 1]);
+                    bin = sum(double(row([ind ind+Ns])).*[2, 1]);
                     if bin == 0
                         continue;
                     end

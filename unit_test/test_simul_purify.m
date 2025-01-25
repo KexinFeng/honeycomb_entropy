@@ -4,26 +4,27 @@ addpath(genpath([filepath, '/../../utils']));
 rng(24);
 
 %% Generator (deprecated)
-simul = Simulator('cir', 2, 'wid', 2, 'boundary', 'open');
-generator = CheckGenerator('cir', 2, 'wid', 2, 'boundary', 'open');
+simul = Simulator('cir', 2, 'wid', 2, 'boundary', 'periodic');
+generator = CheckGenerator('cir', 2, 'wid', 2, 'boundary', 'periodic');
 simul.check_generator = generator;
 simul.verbose = true;
-simul.T = 10;
+simul.T = 20;
 simul.simulate()
 
 %% GeneratorPlaquet
 simul = Simulator('cir', 2, 'wid', 2, 'boundary', 'periodic');
 simul.check_generator.set_probs([1/3, 1/3, 1/3, 0])
 simul.verbose = true;
-simul.T = 10;
+simul.T = 20;
 simul.simulate()
 
 %% GeneratorPlaquet
-simul = Simulator('cir', 2, 'wid', 2, 'boundary', 'open');
-generator = CheckGeneratorPlaq('cir', 2, 'wid', 2, 'boundary', 'open');
+rng(24);
+simul = Simulator('cir', 2, 'wid', 2, 'boundary', 'periodic');
+generator = CheckGeneratorPlaq('cir', 2, 'wid', 2, 'boundary', 'periodic');
 simul.check_generator = generator;
 simul.verbose = true;
-simul.T = 10;
+simul.T = 20;
 simul.simulate()
 
 %%

@@ -62,8 +62,9 @@ methods
         else
             clonedMap = containers.Map(keys(obj.frozen_qubits), values(obj.frozen_qubits));
         end
-
-        tableau = Tableau(kv_list{:}, 'frozen_qubits', clonedMap);
+        % This should reproduce the same behavior, yes? Tested with both
+        % empty and occupied frozen_qubits map and seemed to work fine
+        tableau = Tableau(kv_list{:});%, 'frozen_qubits', clonedMap);
     end
     
 
@@ -71,7 +72,6 @@ methods
         kv_list = get_param(obj);
         save(file_path, 'kv_list');
     end
-
 
     function entropy = get_entropy(obj)
         % entropy = obj.Ns - 2*strcmp(obj.boundary, 'open') - obj.stab_size; % frozen qubits are discarded.
@@ -88,36 +88,48 @@ methods
 
         % search
         valid_stab_idx = Ns + (1: stab_size); %array of all stab row indices
+        disp(valid_stab_idx);
         for qubit = qubits
             if isKey(obj.frozen_qubits, qubit)
+                % Does not trace out frozen qubits
                 continue
             end
+            % Freezes traced qubits
             obj.frozen_qubits(qubit) = true;
 
-            % Find all Xs on the qubit, transform them and remove the first
-            % collect which qubit indices have an x gate
+            % Find all Xs or Ys on the qubit, transform them and remove the first
             row_idx_x = valid_stab_idx(obj.tab(valid_stab_idx, qubit) == 1);
+            disp({'x';row_idx_x});
             if ~isempty(row_idx_x)
                 % If gate from current qubit is present in another row,
                 % removes that influence
                 obj.add_onto(row_idx_x(1), row_idx_x(2:end));
                 % Removes the traced qubit from list
+                disp(row_idx_x(1));
                 valid_stab_idx(valid_stab_idx == row_idx_x(1)) = [];
+                disp(size(valid_stab_idx));
+                disp(valid_stab_idx);
             end
-
-            % Find all Zs on the quit, transform them and remove the first
-            % collect which qubit indices have a z gate
+            % Find all Zs on the qubit, transform them and remove the first
             row_idx_z = valid_stab_idx(obj.tab(valid_stab_idx, qubit + Ns) == 1);
+            disp({'z';row_idx_z});
             if ~isempty(row_idx_z)
                 obj.add_onto(row_idx_z(1), row_idx_z(2:end));
+                disp(row_idx_z(1));
                 valid_stab_idx(valid_stab_idx == row_idx_z(1)) = [];
+                disp(size(valid_stab_idx));
+                disp(valid_stab_idx);
             end
-            
+            disp({row_idx_x;row_idx_z});
+            disp([~isempty(row_idx_x) ~isempty(row_idx_z)]);
+            % Due to y gates being sorted by row_idx_x, this only ever
+            % subtracts 1 from the stab size, as we expect.
             stab_size = stab_size - ~isempty(row_idx_x) - ~isempty(row_idx_z);
+            disp(stab_size);
         end
         assert(stab_size == length(valid_stab_idx));
         
-        % Re-org to remove the X and Z row from below
+        % Re-org to remove the X and Z row from the stabilizer section
         % Reorder tableau with only the untraced stabilizers beginning at
         % row N_s+1. Traced columns move to the end in both stab and
         % destabilizer sections, essentially, not totally clear on
@@ -125,16 +137,20 @@ methods
         src = Ns + (1: obj.stab_size);
         new_order = [valid_stab_idx, setdiff(src, valid_stab_idx)];
         disp(new_order);
-        obj.tab(new_order, :) = obj.tab(src, :);        
-        obj.tab(new_order - Ns, :) = obj.tab(src - Ns, :);
-
+        % Is this not how the rows should be reassigned? Testing it this
+        % way seemed to put the expected qubits outside the stabilizer.
+        %obj.tab(new_order, :) = obj.tab(src, :);        
+        %obj.tab(new_order - Ns, :) = obj.tab(src - Ns, :);
+        obj.tab(src, :) = obj.tab(new_order, :) ;        
+        obj.tab(src - Ns, :) = obj.tab(new_order - Ns, :);
         obj.stab_size = stab_size;
     end
 
 
     function add_onto(obj, row_src, row_tgt)
         % Adds row_src onto row_tgt and then adds the corresponding
-        % destabilizers together, plus one, onto the row_src complement
+        % destabilizers together onto the row_src complement
+        % works for multiple row_tgt simulatenously
         if isempty(row_tgt)
             return
         end
@@ -146,7 +162,7 @@ methods
         % destab update
         row_src_bar = row_src - Ns;
         row_tgt_bar = row_tgt - Ns;
-        obj.tab(row_src_bar, :) = mod(obj.tab(row_src_bar, :) + sum(obj.tab(row_tgt_bar, :), 1), 2);
+        obj.tab(row_src_bar, :) = mod(obj.tab(row_src_bar, :) + uint16(sum(obj.tab(row_tgt_bar, :), 1)), 2);
     end
    
     %% Utility
@@ -174,6 +190,8 @@ methods
 
 
     function pair_tab_property(obj)
+        %This is a duplicate of the Util.m function? Checks that one of the
+        %model assumptions is satisfied: only rows i and i+Ns anticommute.
         obj.Ns = obj.cir * obj.wid * 2;
         b = true;
         str_arr = {};
