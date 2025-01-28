@@ -51,7 +51,7 @@ function main_purify(varargin)
     
     cirs = [18, 24, 48, 54, 60];
     cirs = [36, 42, 48, 54, 60];
-    cirs = [14];
+    cirs = [10];
     pars.T = 20;
 
     probs = [0.25, 0.25, 0.25, 0.25];
@@ -71,7 +71,7 @@ function main_purify(varargin)
             'probs', probs(probs_idx_y(ord), :), ...
             'cir', cirs_x(ord), ...
             'update', pars.update, ...
-            'plotting', 0, ...
+            'plotting', 1, ...
             'T', pars.T);
         
         overheads(ord) = etime(clock(), tictime1);

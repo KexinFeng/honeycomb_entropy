@@ -52,6 +52,11 @@ methods
         end
     end
 
+    
+    function to_cpu(obj)
+        obj.tab = gather(obj.tab);
+    end
+
 
     function tableau = clone(obj)
         kv_list = get_param(obj);

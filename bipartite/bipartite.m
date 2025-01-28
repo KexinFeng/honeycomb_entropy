@@ -1,112 +1,106 @@
-function [output, xs] = bipartite(varargin)
-    tictime = clock(); 
-    script_path = fileparts(mfilename('fullpath'));
-    addpath(genpath([script_path, '/../../utils']));
-    addpath([script_path, '/../']);
+function bipartite(varargin)
+tictime = clock(); 
+script_path = fileparts(mfilename('fullpath'));
+addpath(genpath([script_path, '/../../utils']));
+addpath([script_path, '/../']);
+
+
+%% input
+ip = inputParser;
+ip.KeepUnmatched = true;
+ip.PartialMatching = false;
+
+% ip.addParameter('cir', 14);
+ip.addParameter('boundary', 'periodic');
+ip.addParameter('shift', 0);
+ip.addParameter('T', 150);
+ip.addParameter('verbose', false);
+% ip.addParameter('probs', [0.25, 0.25, 0.25, 0.25]);
+ip.addParameter('num', 10);
+ip.addParameter('plotting', 1);
+ip.addParameter('update', 0);
+ip.addParameter('init', 'flux_free');
+
+ip.parse(varargin{:});
+pars = ip.Results;
+
+% Convert pars to a cell array of parameter-value pairs
+fields = fieldnames(pars);      
+values = struct2cell(pars);     
+varargin = reshape([fields, values]', 1, []); 
+
+%% Prepare input
+cirs = [18, 24, 30, 36, 42, 48, 54, 60];  
+cirs = [6, 10, 12, 14, 16, 18, 24, 30, 36, 42, 48];  
+% cirs = [10];
+probs = [0.25, 0.25, 0.25, 0.25];
+
+
+for i = 1: length(cirs)
+    L = cirs(i);
     
-    
-    %% input
-    ip = inputParser;
-    ip.KeepUnmatched = true;
-    ip.PartialMatching = false;
-    
-    ip.addParameter('cir', 10);
-    ip.addParameter('boundary', 'periodic');
-    ip.addParameter('shift', 0);
-    ip.addParameter('T', 150);
-    ip.addParameter('verbose', false);
-    ip.addParameter('probs', [0.25, 0.25, 0.25, 0.25]);
-    ip.addParameter('num', 10);
-    ip.addParameter('plotting', 1);
-    ip.addParameter('update', 0);
-    ip.addParameter('init', 'flux_free');
-    
-    ip.parse(varargin{:});
-    pars = ip.Results;
-    
-    % Convert pars to a cell array of parameter-value pairs
-    fields = fieldnames(pars);      
-    values = struct2cell(pars);     
-    varargin = reshape([fields, values]', 1, []); 
-    
-    %% get late-time state
-    res = purify(varargin{:});
-    
-    %% measure bipartite
-    sys_sizes = 0: ceil(pars.cir / pars.num): pars.cir;
-    sys_sizes = unique(sort([sys_sizes, floor(pars.cir / 2)]));
-    
-    entropies = zeros(size(sys_sizes));
-    for idx = 1: length(sys_sizes)
-        tableau = res.simul.tableau.clone();
-        sys_size = sys_sizes(idx);
-        qubits_env = res.simul.check_generator.len2qubits(pars.cir - sys_size, 'start', 1 + sys_size);
-        tableau.partial_trace(qubits_env);
-        entropies(idx) = tableau.get_entropy();
+    if L >= 36
+        pars.T = 300;
     end
-    % Delta S
-    idx = (sys_sizes == pars.cir / 2);
-    delta_S = entropies - entropies(idx);
     
-    output = {delta_S / pars.cir, entropies / pars.cir};
-    xs = sys_sizes / pars.cir;
+    %% save
+    name = sprintf('cir_%d_T_%d_probs_%.2f_%.2f_%.2f_%.2f_%s',...
+        L, pars.T, probs(1), probs(2), probs(3), ...
+        probs(4), pars.boundary);
     
-    
-    %% plotting
-    if pars.plotting
-        name = sprintf('cir_%d_T_%d_probs_%.2f_%.2f_%.2f_%.2f_%s',...
-        pars.cir, pars.T, pars.probs(1), pars.probs(2), pars.probs(3), ...
-        pars.probs(4), pars.boundary);
-    
-        title_str = name;
-        title_str = regexprep(title_str, '(?<=\D)_', '=');
-        title_str = regexprep(title_str, '(?<=\d)_', ' ');
-        
-        fig_folder = [script_path, '/figures_bipartite/'];
-        mkdir(fig_folder);
-        save_str = [fig_folder, '/bipartite_', name];  
-        plot_bipartite(output, xs, title_str, save_str, ...
-            'legend_str', {sprintf('L=%d', pars.cir)});
-    end
-
-end
-
-
-function plot_bipartite(outputs, xs, title_str, save_str, varargin)
-    ip = inputParser;
-    ip.addParameter('err', {});
-    ip.addParameter('legend_str', {'L=10', 'pp', 'hh'});
-    
-    ip.parse(varargin{:})
-    pars = ip.Results;
-    
-    %%
-    ys = outputs{1};
-    
-    prep_plots
-    figure
-    hold on
-    box on
-    if isempty(pars.err)
-        hb = plot(xs, ys, '*b-');
+    fprintf('%s\n', name);                
+    data_folder = sprintf([script_path, '/data_%s/'], mfilename);
+    triexpf(~exist(data_folder, 'dir'), {@mkdir, data_folder}, {});
+    if ~ pars.update && exist([data_folder, name, '.mat'], 'file')
+        loaded = load([data_folder, name, '.mat']);
+        fields_loaded = fieldnames(loaded);
+        for idx = 1:length(fields_loaded)
+            if strcmp(fields_loaded{idx}, 'script_path') || strcmp(fields_loaded{idx}, 'fields_loaded')
+                continue
+            end
+            eval([fields_loaded{idx} ' = loaded.(fields_loaded{idx});']);
+        end
+        disp('file exists, loaded');
     else
-        hb = errorbar(xs, ys, pars.err{1}, '*b-');
-    end
+        disp('update or file not exist');
+        
+        
+        % Compute entropy
+        ls = 0: max(1, floor(L / pars.num)): L;
+        ls = unique(sort([ls, floor(L / 2)]));
+            
+        % Purify load
+        res = purify(varargin{:}, 'T', pars.T, 'cir', L, 'probs', probs, 'plotting', 0);
+        entropies = zeros(size(ls));
     
-    xlabel('l/L', 'Interpreter', 'latex')
-    ylabel('S/Lln2', 'Interpreter', 'latex')
+        for idx = 1: length(ls)
+            fprintf('%d/ %d = %.2f\n', idx, length(ls), idx/ length(ls))
+            tableau = res.simul.tableau.clone();
+            sys_size = ls(idx);
+            qubits_env = res.simul.check_generator.len2qubits(L - sys_size, 'start', 1 + sys_size);
+            tableau.partial_trace(qubits_env);
     
-    legend(hb, pars.legend_str, 'AutoUpdate', 'off', 'Location', 'southeast');
-    title(title_str);
+            entropies(idx) = tableau.get_entropy();
+        end 
     
+        % tableau = res.simul.tableau.clone();
+        % for idx = fliplr(1: length(ls))
+        %     fprintf('%d/ %d = %.2f\n', idx, length(ls), idx/ length(ls))
+        %     sys_size = ls(idx);
+        %     qubits_env = res.simul.check_generator.len2qubits(L - sys_size, 'start', 1 + sys_size);
+        %     tableau.partial_trace(qubits_env);
+        % 
+        %     entropies(idx) = tableau.get_entropy();
+        % end 
     
-    %%
-    if ~isempty(save_str)
-        str = save_str;
-        print(gcf, '-depsc2', [str,'.eps']);
-        eps2pdf([str,'.eps'], [str,'.pdf'], 1);
-        delete([str,'.eps']);
-    end
+        %% save
+        pars_tmp = pars;
+        clear pars fields_loaded
+        save([data_folder, name, '.mat']);
+        fprintf('data saved:\n %s\n', [data_folder, name]);
+        fprintf('Time elapsed: %f s\n',  etime(clock(), tictime));
+        pars = pars_tmp;
+end        
+
+
 end
-
-
