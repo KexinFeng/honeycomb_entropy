@@ -52,6 +52,11 @@ methods
         end
     end
 
+    
+    function to_cpu(obj)
+        obj.tab = gather(obj.tab);
+    end
+
 
     function tableau = clone(obj)
         kv_list = get_param(obj);
@@ -113,8 +118,9 @@ methods
         % Re-org to remove the X and Z row from below
         src = Ns + (1: obj.stab_size);
         new_order = [valid_stab_idx, setdiff(src, valid_stab_idx)];
-        obj.tab(new_order, :) = obj.tab(src, :);        
-        obj.tab(new_order - Ns, :) = obj.tab(src - Ns, :);
+
+        obj.tab(src, :) = obj.tab(new_order, :);        
+        obj.tab(src - Ns, :) = obj.tab(new_order - Ns, :);
 
         obj.stab_size = stab_size;
     end
@@ -132,7 +138,8 @@ methods
         % destab update
         row_src_bar = row_src - Ns;
         row_tgt_bar = row_tgt - Ns;
-        obj.tab(row_src_bar, :) = mod(obj.tab(row_src_bar, :) + sum(obj.tab(row_tgt_bar, :), 1), 2);
+        tab_class = class(obj.tab);
+        obj.tab(row_src_bar, :) = mod(obj.tab(row_src_bar, :) + feval(tab_class, sum(obj.tab(row_tgt_bar, :), 1)), 2);
     end
    
     %% Utility
