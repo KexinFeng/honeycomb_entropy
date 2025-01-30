@@ -88,7 +88,6 @@ methods
         
         Ns = obj.Ns;
         stab_size = obj.stab_size;
-        tab = obj.tab;
 
         % search
         valid_stab_idx = Ns + (1: stab_size);
@@ -99,14 +98,14 @@ methods
             obj.frozen_qubits(qubit) = true;
 
             % Find all Xs on the qubit, transform them and remove the first
-            row_idx_x = valid_stab_idx(tab(valid_stab_idx, qubit) == 1);
+            row_idx_x = valid_stab_idx(obj.tab(valid_stab_idx, qubit) == 1);
             if ~isempty(row_idx_x)
                 obj.add_onto(row_idx_x(1), row_idx_x(2:end));
                 valid_stab_idx(valid_stab_idx == row_idx_x(1)) = [];
             end
 
             % Find all Zs on the quit, transform them and remove the first
-            row_idx_z = valid_stab_idx(tab(valid_stab_idx, qubit + Ns) == 1);
+            row_idx_z = valid_stab_idx(obj.tab(valid_stab_idx, qubit + Ns) == 1);
             if ~isempty(row_idx_z)
                 obj.add_onto(row_idx_z(1), row_idx_z(2:end));
                 valid_stab_idx(valid_stab_idx == row_idx_z(1)) = [];
@@ -119,11 +118,10 @@ methods
         % Re-org to remove the X and Z row from below
         src = Ns + (1: obj.stab_size);
         new_order = [valid_stab_idx, setdiff(src, valid_stab_idx)];
-        tab(new_order, :) = tab(src, :);        
-        tab(new_order - Ns, :) = tab(src - Ns, :);
+        obj.tab(new_order, :) = obj.tab(src, :);        
+        obj.tab(new_order - Ns, :) = obj.tab(src - Ns, :);
 
         obj.stab_size = stab_size;
-        obj.tab = tab;
     end
 
 
@@ -132,17 +130,14 @@ methods
             return
         end
         Ns = obj.Ns;
-        tab = obj.tab;
 
-        row = tab(row_src, :);
-        tab(row_tgt, :) = mod(tab(row_tgt, :) + row, 2);
+        row = obj.tab(row_src, :);
+        obj.tab(row_tgt, :) = mod(obj.tab(row_tgt, :) + row, 2);
         
         % destab update
         row_src_bar = row_src - Ns;
         row_tgt_bar = row_tgt - Ns;
-        tab(row_src_bar, :) = mod(tab(row_src_bar, :) + sum(tab(row_tgt_bar, :), 1), 2);
-
-        obj.tab = tab;
+        obj.tab(row_src_bar, :) = mod(obj.tab(row_src_bar, :) + sum(obj.tab(row_tgt_bar, :), 1), 2);
     end
    
     %% Utility
