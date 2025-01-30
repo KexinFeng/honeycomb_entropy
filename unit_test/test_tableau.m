@@ -4,7 +4,7 @@ addpath(genpath([filepath, '/../../utils']));
 clc
 rng(24);
 
-%%
+%% Test set_tableau
 tab = load('./data/tab_c2w2T10.mat');
 tableau = Tableau('cir', 2, 'wid', 2, ...
     'tab', tab.tab, 'stab_size', tab.stab_size);
