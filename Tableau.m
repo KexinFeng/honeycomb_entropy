@@ -118,8 +118,9 @@ methods
         % Re-org to remove the X and Z row from below
         src = Ns + (1: obj.stab_size);
         new_order = [valid_stab_idx, setdiff(src, valid_stab_idx)];
-        obj.tab(new_order, :) = obj.tab(src, :);        
-        obj.tab(new_order - Ns, :) = obj.tab(src - Ns, :);
+
+        obj.tab(src, :) = obj.tab(new_order, :);        
+        obj.tab(src - Ns, :) = obj.tab(new_order - Ns, :);
 
         obj.stab_size = stab_size;
     end
