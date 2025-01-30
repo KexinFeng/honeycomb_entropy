@@ -132,6 +132,10 @@ methods
             error('Unsupported')
         end
         
+        % delta's here mean the displacement from a reference point
+        % At certain position along the circumference coordinate, a unit
+        % cell contains two columns of sites, denoted by 1 and 2
+        % respectively. Each column contains both A and B site.
         delta_ys_a_1 = 0: 2: obj.wid - 2;
         delta_xs_a_1 = 0: -1: -(obj.wid/2 - 1);
         

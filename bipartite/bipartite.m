@@ -18,7 +18,7 @@ ip.addParameter('verbose', false);
 % ip.addParameter('probs', [0.25, 0.25, 0.25, 0.25]);
 ip.addParameter('num', 10);
 ip.addParameter('plotting', 1);
-ip.addParameter('update', 1);
+ip.addParameter('update', 0);
 ip.addParameter('init', 'flux_free');
 
 ip.parse(varargin{:});
@@ -32,7 +32,7 @@ varargin = reshape([fields, values]', 1, []);
 %% Prepare input
 cirs = [18, 24, 30, 36, 42, 48, 54, 60];  
 cirs = [6, 10, 12, 14, 16, 18, 24, 30, 36, 42];  
-cirs = [6, 10, 12, 14, 16, 18];  
+cirs = [6, 10, 12, 14, 16, 18, 24, 30];  
 % cirs = [10];
 probs = [0.25, 0.25, 0.25, 0.25];
 
@@ -67,35 +67,29 @@ for i = 1: length(cirs)
     else
         disp('update or file not exist');
         
-        
         % Compute entropy
         ls = 0: max(1, floor(L / pars.num)): L;
         ls = unique(sort([ls, floor(L / 2)]));
-            
+        entropies = zeros(size(ls));
+
         % Purify load
         res = purify(varargin{:}, 'T', pars.T, 'cir', L, 'probs', probs, ...
             'plotting', 0, 'update', 0);
-        entropies = zeros(size(ls));
-        
-        for idx = 1: length(ls)
+    
+        tableau = res.simul.tableau.clone();
+        % qb_last = [];
+        for idx = fliplr(1: length(ls))
             fprintf('%d/ %d = %.2f\n', idx, length(ls), idx/ length(ls))
-            tableau = res.simul.tableau.clone();
             sys_size = ls(idx);
             qubits_env = res.simul.check_generator.len2qubits(L - sys_size, 'start', 1 + sys_size);
+            % if qb_last
+            %     assert(all(ismember(qb_last, qubits_env)))
+            % end
+            % qb_last = qubits_env;
             tableau.partial_trace(qubits_env);
 
             entropies(idx) = tableau.get_entropy();
         end 
-    
-        % tableau = res.simul.tableau.clone();
-        % for idx = fliplr(1: length(ls))
-        %     fprintf('%d/ %d = %.2f\n', idx, length(ls), idx/ length(ls))
-        %     sys_size = ls(idx);
-        %     qubits_env = res.simul.check_generator.len2qubits(L - sys_size, 'start', 1 + sys_size);
-        %     tableau.partial_trace(qubits_env);
-        % 
-        %     entropies(idx) = tableau.get_entropy();
-        % end 
     
         %% save
         pars_tmp = pars;
