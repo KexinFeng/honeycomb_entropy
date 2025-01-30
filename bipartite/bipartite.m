@@ -77,25 +77,25 @@ for i = 1: length(cirs)
             'plotting', 0, 'update', 0);
         entropies = zeros(size(ls));
         
-        % for idx = 1: length(ls)
-        %     fprintf('%d/ %d = %.2f\n', idx, length(ls), idx/ length(ls))
-        %     tableau = res.simul.tableau.clone();
-        %     sys_size = ls(idx);
-        %     qubits_env = res.simul.check_generator.len2qubits(L - sys_size, 'start', 1 + sys_size);
-        %     tableau.partial_trace(qubits_env);
-        % 
-        %     entropies(idx) = tableau.get_entropy();
-        % end 
-    
-        tableau = res.simul.tableau.clone();
-        for idx = fliplr(1: length(ls))
+        for idx = 1: length(ls)
             fprintf('%d/ %d = %.2f\n', idx, length(ls), idx/ length(ls))
+            tableau = res.simul.tableau.clone();
             sys_size = ls(idx);
             qubits_env = res.simul.check_generator.len2qubits(L - sys_size, 'start', 1 + sys_size);
             tableau.partial_trace(qubits_env);
 
             entropies(idx) = tableau.get_entropy();
         end 
+    
+        % tableau = res.simul.tableau.clone();
+        % for idx = fliplr(1: length(ls))
+        %     fprintf('%d/ %d = %.2f\n', idx, length(ls), idx/ length(ls))
+        %     sys_size = ls(idx);
+        %     qubits_env = res.simul.check_generator.len2qubits(L - sys_size, 'start', 1 + sys_size);
+        %     tableau.partial_trace(qubits_env);
+        % 
+        %     entropies(idx) = tableau.get_entropy();
+        % end 
     
         %% save
         pars_tmp = pars;
