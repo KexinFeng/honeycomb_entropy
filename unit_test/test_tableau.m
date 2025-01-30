@@ -5,7 +5,7 @@ clc
 rng(24);
 
 %%
-tab = load('/Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/unit_test/data/tab_c2w2T10.mat');
+tab = load('./data/tab_c2w2T10.mat');
 tableau = Tableau('cir', 2, 'wid', 2, ...
     'tab', tab.tab, 'stab_size', tab.stab_size);
 
@@ -20,7 +20,7 @@ tableau.pair_tab_property();
 g2.tableau.render_table();
 g2.tableau.pair_tab_property();
 
-%%
+%% Test partial trace
 tableau = g1.tableau;
 tableau.partial_trace(2);
 assert(tableau.stab_size == 2);
@@ -43,7 +43,7 @@ tableau2.pair_tab_property();
 
 
 %%
-tab = load('/Users/kx/Desktop/forked/K_circuit/code/honeycomb_entropy/unit_test/data/tab_c2w2T30.mat');
+tab = load('./data/tab_c2w2T30.mat');
 tableau = Tableau('cir', 2, 'wid', 2, ...
     'tab', tab.tab, 'stab_size', tab.stab_size);
 
@@ -58,7 +58,7 @@ g1.tableau.pair_tab_property();
 g2.tableau.render_table();
 g2.tableau.pair_tab_property();
 
-%%
+%% Test partial trace
 tableau = g1.tableau;
 tableau.partial_trace(2);
 assert(tableau.stab_size == 2);

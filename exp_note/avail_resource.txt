@@ -1,0 +1,44 @@
+Shows total number of GPU per partition
+interactive-gpu   112
+preempt-gpu       112
+a100-4            140
+a100-8            32
+v100              40
+msigpu            212
+
+Shows the GPU information for each partition
+sinfo -o "%P %G" | column -t
+PARTITION         GRES
+amdsmall          tmpdisk:420000
+amdlarge          tmpdisk:420000
+amd2tb            tmpdisk:420000
+amd512            tmpdisk:420000
+v100              gpu:v100:2,tmpdisk:861000
+v100              gpu:v100:4,tmpdisk:861000
+v100              gpu:v100:8,tmpdisk:861000
+agsmall*          tmpdisk:861000
+aglarge           tmpdisk:861000
+ag2tb             tmpdisk:861000
+a100-4            gpu:a100:4,tmpdisk:861000
+a100-8            gpu:a100:8,tmpdisk:861000
+msismall          tmpdisk:861000
+msismall          tmpdisk:420000
+msilarge          tmpdisk:861000
+msilarge          tmpdisk:420000
+msibigmem         tmpdisk:861000
+msibigmem         tmpdisk:420000
+msigpu            gpu:a100:4,tmpdisk:861000
+msigpu            gpu:a100:8,tmpdisk:861000
+msigpu            gpu:v100:2,tmpdisk:861000
+msigpu            gpu:v100:4,tmpdisk:861000
+msigpu            gpu:v100:8,tmpdisk:861000
+interactive       tmpdisk:861000
+interactive       tmpdisk:420000
+interactive-long  tmpdisk:861000
+interactive-long  tmpdisk:420000
+interactive-gpu   gpu:l40s:4,tmpdisk:861000
+interactive-gpu   gpu:a40:8,tmpdisk:861000
+preempt           tmpdisk:861000
+preempt           tmpdisk:420000
+preempt-gpu       gpu:l40s:4,tmpdisk:861000
+preempt-gpu       gpu:a40:8,tmpdisk:861000
