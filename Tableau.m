@@ -138,7 +138,8 @@ methods
         % destab update
         row_src_bar = row_src - Ns;
         row_tgt_bar = row_tgt - Ns;
-        obj.tab(row_src_bar, :) = mod(obj.tab(row_src_bar, :) + sum(obj.tab(row_tgt_bar, :), 1), 2);
+        tab_class = class(obj.tab);
+        obj.tab(row_src_bar, :) = mod(obj.tab(row_src_bar, :) + feval(tab_class, sum(obj.tab(row_tgt_bar, :), 1)), 2);
     end
    
     %% Utility
