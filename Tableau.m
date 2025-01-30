@@ -130,14 +130,17 @@ methods
             return
         end
         Ns = obj.Ns;
+        tab = obj.tab;
 
-        row = obj.tab(row_src, :);
-        obj.tab(row_tgt, :) = mod(obj.tab(row_tgt, :) + row, 2);
+        row = tab(row_src, :);
+        tab(row_tgt, :) = mod(tab(row_tgt, :) + row, 2);
         
         % destab update
         row_src_bar = row_src - Ns;
         row_tgt_bar = row_tgt - Ns;
-        obj.tab(row_src_bar, :) = mod(obj.tab(row_src_bar, :) + sum(obj.tab(row_tgt_bar, :), 1), 2);
+        tab(row_src_bar, :) = mod(tab(row_src_bar, :) + sum(tab(row_tgt_bar, :), 1), 2);
+
+        obj.tab = tab;
     end
    
     %% Utility

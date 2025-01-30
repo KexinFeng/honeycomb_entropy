@@ -31,7 +31,7 @@ varargin = reshape([fields, values]', 1, []);
 
 %% Prepare input
 cirs = [18, 24, 30, 36, 42, 48, 54, 60];  
-cirs = [6, 10, 12, 14, 16, 18, 24];  
+cirs = [6, 10, 12, 14, 16, 18];  
 % cirs = [10];
 probs = [0.25, 0.25, 0.25, 0.25];
 
@@ -61,7 +61,7 @@ for i = 1: length(cirs)
     %     pars.T = 300;
     % end
 
-    %% save
+    %% load
     name = sprintf('cir_%d_T_%d_probs_%.2f_%.2f_%.2f_%.2f_%s',...
         L, pars.T, probs(1), probs(2), probs(3), ...
         probs(4), pars.boundary);
